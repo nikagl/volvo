@@ -1,0 +1,7 @@
+website: https://developer.volvocars.com/
+login_type: github
+dev_username: username@domain.com
+dev_password: YOUR_PASSWORD_HERE
+volvoid_username: otherusername@domain.com
+volvoid_password: YOUR_PASSWORD_HERE
+vcc_apikey: YOUR_VCC_API_KEY_HERE

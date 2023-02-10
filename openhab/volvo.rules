@@ -1,0 +1,212 @@
+// Define global parameters
+var vccapikey = volvovccapikey.state.toString()
+var vehicle_vin = volvovin.state.toString()
+var oauth2_access_token = "aDRZZjBiOlU4WWtTYlZsNnh3c2c1WVFxWmZyZ1ZtSWFEcGhPc3kxUENhVXNpY1F0bzNUUjVrd2FKc2U0QVpkZ2ZJZmNMeXc="
+var authURL = "https://volvoid.eu.volvocars.com/as/token.oauth2"
+var authContentType = "application/x-www-form-urlencoded"
+var authContent = "grant_type=password&username=" + volvousername.state.toString() + "&password=" + volvopassword.state.toString() +  "&scope=openid email profile care_by_volvo:financial_information:invoice:read care_by_volvo:financial_information:payment_method care_by_volvo:subscription:read customer:attributes customer:attributes:write order:attributes vehicle:attributes tsp_customer_api:all conve:brake_status conve:climatization_start_stop conve:command_accessibility conve:commands conve:diagnostics_engine_status conve:diagnostics_workshop conve:doors_status conve:engine_status conve:environment conve:fuel_status conve:honk_flash conve:lock conve:lock_status conve:navigation conve:odometer_status conve:trip_statistics conve:tyre_status conve:unlock conve:vehicle_relation conve:warnings conve:windows_status energy:battery_charge_level energy:charging_connection_status energy:charging_system_status energy:electric_range energy:estimated_charging_time energy:recharge_status vehicle:attributes"
+	var authHeaders = newHashMap(
+		"Authorization" -> "Basic aDRZZjBiOlU4WWtTYlZsNnh3c2c1WVFxWmZyZ1ZtSWFEcGhPc3kxUENhVXNpY1F0bzNUUjVrd2FKc2U0QVpkZ2ZJZmNMeXc=",
+		"User-agent" -> "okhttp/4.10.0"
+	)
+	
+// ************************************************
+rule "Trigger: Volvo List Verhicles"
+when
+    Item volvolistvehicles changed to ON
+then
+	// First authenticate
+	var authResponse = sendHttpPostRequest(authURL, authContentType, authContent, authHeaders, 3000)
+	var access_token = transform("JSONPATH", "access_token", authResponse)
+	var token_type = transform("JSONPATH", "token_type", authResponse)
+	var expires_in = transform("JSONPATH", "expires_in", authResponse)
+
+	logInfo("Volvo", "token_type = {}", token_type)
+	logInfo("Volvo", "expires_in = {}", expires_in)
+
+	// Then retrieve vehicle list
+	var vccURL = "https://api.volvocars.com/connected-vehicle/v1/vehicles/"
+	var vccHeaders = newHashMap(
+		"Authorization" -> "Bearer " + access_token,
+		"vcc-api-key" -> vccapikey,
+		"accept" -> "application/vnd.volvocars.api.connected-vehicle.vehiclelist.v1+json"
+	)
+	var vccResponse = sendHttpGetRequest(vccURL, vccHeaders, 3000)
+	
+	logInfo("Volvo", "vccURL = {}", vccURL)
+	logInfo("Volvo", "vccResponse = {}", vccResponse)
+	
+	volvoresult.postUpdate(vccResponse)
+	volvolistvehicles.sendCommand(OFF)
+end
+
+// ************************************************
+rule "Trigger: Volvo Lock Car"
+when
+    Item volvolockcar changed to ON
+then
+	// First authenticate
+	var authResponse = sendHttpPostRequest(authURL, authContentType, authContent, authHeaders, 3000)
+	var access_token = transform("JSONPATH", "access_token", authResponse)
+	var token_type = transform("JSONPATH", "token_type", authResponse)
+	var expires_in = transform("JSONPATH", "expires_in", authResponse)
+
+	logInfo("Volvo", "token_type = {}", token_type)
+	logInfo("Volvo", "expires_in = {}", expires_in)
+
+	// Then retrieve vehicle list
+	var vccURL = "https://api.volvocars.com/connected-vehicle/v2/vehicles/" + vehicle_vin + "/commands/lock"
+	var vccContentType = "application/vnd.volvocars.api.connected-vehicle.lock.v2+json"
+	var vccContent = ""
+	var vccTimeout = 30000
+	var vccHeaders = newHashMap(
+		"Authorization" -> "Bearer " + access_token,
+		"vcc-api-key" -> vccapikey,
+		"accept" -> vccContentType
+	)
+	var vccResponse = sendHttpPostRequest(vccURL, vccContentType, vccContent, vccHeaders, vccTimeout)
+	
+	logInfo("Volvo", "vccURL = {}", vccURL)
+	logInfo("Volvo", "vccResponse = {}", vccResponse)
+
+	volvoinvokestatus.postUpdate(transform("JSONPATH", "data.invokeStatus", vccResponse))
+	volvoresult.postUpdate(vccResponse)
+	volvolockcar.sendCommand(OFF)
+end
+
+// ************************************************
+rule "Trigger: Volvo Unlock Car"
+when
+    Item volvounlockcar changed to ON
+then
+	// First authenticate
+	var authResponse = sendHttpPostRequest(authURL, authContentType, authContent, authHeaders, 3000)
+	var access_token = transform("JSONPATH", "access_token", authResponse)
+	var token_type = transform("JSONPATH", "token_type", authResponse)
+	var expires_in = transform("JSONPATH", "expires_in", authResponse)
+
+	logInfo("Volvo", "token_type = {}", token_type)
+	logInfo("Volvo", "expires_in = {}", expires_in)
+
+	// Then retrieve vehicle list
+	var vccURL = "https://api.volvocars.com/connected-vehicle/v2/vehicles/" + vehicle_vin + "/commands/unlock"
+	var vccContentType = "application/vnd.volvocars.api.connected-vehicle.unlock.v2+json"
+	var vccContent = ""
+	var vccTimeout = 30000
+	var vccHeaders = newHashMap(
+		"Authorization" -> "Bearer " + access_token,
+		"vcc-api-key" -> vccapikey,
+		"accept" -> vccContentType
+	)
+	var vccResponse = sendHttpPostRequest(vccURL, vccContentType, vccContent, vccHeaders, vccTimeout)
+	
+	logInfo("Volvo", "vccURL = {}", vccURL)
+	logInfo("Volvo", "vccResponse = {}", vccResponse)
+
+	volvoinvokestatus.postUpdate(transform("JSONPATH", "data.invokeStatus", vccResponse))
+	volvoresult.postUpdate(vccResponse)
+	volvounlockcar.sendCommand(OFF)
+end
+
+// ************************************************
+rule "Trigger: Volvo Start Heater"
+when
+    Item volvostartheater changed to ON
+then
+	// First authenticate
+	var authResponse = sendHttpPostRequest(authURL, authContentType, authContent, authHeaders, 3000)
+	var access_token = transform("JSONPATH", "access_token", authResponse)
+	var token_type = transform("JSONPATH", "token_type", authResponse)
+	var expires_in = transform("JSONPATH", "expires_in", authResponse)
+
+	logInfo("Volvo", "token_type = {}", token_type)
+	logInfo("Volvo", "expires_in = {}", expires_in)
+
+	// Then retrieve vehicle list
+	var vccURL = "https://api.volvocars.com/connected-vehicle/v2/vehicles/" + vehicle_vin + "/commands/climatization-start"
+	var vccContentType = "application/vnd.volvocars.api.connected-vehicle.climatizationstart.v2+json"
+	var vccContent = "runtimeMinutes=30"
+	var vccTimeout = 30000
+	var vccHeaders = newHashMap(
+		"Authorization" -> "Bearer " + access_token,
+		"vcc-api-key" -> vccapikey,
+		"accept" -> vccContentType
+	)
+	var vccResponse = sendHttpPostRequest(vccURL, vccContentType, vccContent, vccHeaders, vccTimeout)
+	
+	logInfo("Volvo", "vccURL = {}", vccURL)
+	logInfo("Volvo", "vccResponse = {}", vccResponse)
+
+	volvoresult.postUpdate(vccResponse)
+	volvostartheater.sendCommand(OFF)
+end
+
+// ************************************************
+rule "Trigger: Volvo Stop Heater"
+when
+    Item volvostopheater changed to ON
+then
+	// First authenticate
+	var authResponse = sendHttpPostRequest(authURL, authContentType, authContent, authHeaders, 3000)
+	var access_token = transform("JSONPATH", "access_token", authResponse)
+	var token_type = transform("JSONPATH", "token_type", authResponse)
+	var expires_in = transform("JSONPATH", "expires_in", authResponse)
+
+	logInfo("Volvo", "token_type = {}", token_type)
+	logInfo("Volvo", "expires_in = {}", expires_in)
+
+	// Then retrieve vehicle list
+	var vccURL = "https://api.volvocars.com/connected-vehicle/v2/vehicles/" + vehicle_vin + "/commands/climatization-stop"
+	var vccContentType = "application/vnd.volvocars.api.connected-vehicle.climatizationstop.v2+json"
+	var vccContent = ""
+	var vccTimeout = 30000
+	var vccHeaders = newHashMap(
+		"Authorization" -> "Bearer " + access_token,
+		"vcc-api-key" -> vccapikey,
+		"accept" -> vccContentType
+	)
+	var vccResponse = sendHttpPostRequest(vccURL, vccContentType, vccContent, vccHeaders, vccTimeout)
+	
+	logInfo("Volvo", "vccURL = {}", vccURL)
+	logInfo("Volvo", "vccResponse = {}", vccResponse)
+
+	volvoresult.postUpdate(vccResponse)
+	volvostopheater.sendCommand(OFF)
+end
+
+// ************************************************
+rule "Trigger: Volvo Check Battery"
+when
+    Time cron "0 0/1 * 1/1 * ? *" or
+	Item volvoupdate changed to ON
+then
+	// First authenticate
+	var authResponse = sendHttpPostRequest(authURL, authContentType, authContent, authHeaders, 3000)
+	var access_token = transform("JSONPATH", "access_token", authResponse)
+	var token_type = transform("JSONPATH", "token_type", authResponse)
+	var expires_in = transform("JSONPATH", "expires_in", authResponse)
+
+	logInfo("Volvo", "token_type = {}", token_type)
+	logInfo("Volvo", "expires_in = {}", expires_in)
+
+	// Then retrieve vehicle list
+	var vccURL = "https://api.volvocars.com/connected-vehicle/v1/vehicles/" + vehicle_vin + "/battery-charge-level"
+	var vccHeaders = newHashMap(
+		"Authorization" -> "Bearer " + access_token,
+		"vcc-api-key" -> vccapikey,
+		"accept" -> "application/vnd.volvocars.api.connected-vehicle.vehicledata.v1+json"
+	)
+	var vccResponse = sendHttpGetRequest(vccURL, vccHeaders, 3000)
+	var timestamp = transform("JSONPATH", "data.batteryChargeLevel.timestamp", vccResponse)
+	var value     = transform("JSONPATH", "data.batteryChargeLevel.value", vccResponse)
+	var unit      = transform("JSONPATH", "data.batteryChargeLevel.unit", vccResponse)
+	
+	logInfo("Volvo", "vccURL = {}", vccURL)
+	logInfo("Volvo", "vccResponse = {}", vccResponse)
+	logInfo("Volvo", "timestamp = {}", timestamp)
+	logInfo("Volvo", "value = {}", value)
+	logInfo("Volvo", "unit = {}", unit)
+	
+	volvochargelevel.postUpdate(value)
+	volvoupdate.sendCommand(OFF)
+end

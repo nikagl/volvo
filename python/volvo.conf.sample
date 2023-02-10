@@ -5,3 +5,4 @@ dev_password: YOUR_PASSWORD_HERE
 volvoid_username: otherusername@domain.com
 volvoid_password: YOUR_PASSWORD_HERE
 vcc_apikey: YOUR_VCC_API_KEY_HERE
+volvo_vin: YOUR_VOLVO_VIN_HERE

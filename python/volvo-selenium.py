@@ -115,11 +115,11 @@ async def main(argv):
     try:
         opts, args = getopt.getopt(argv,"ha:",["api="])
     except getopt.GetoptError:
-        print('volvo.py [-h] -a <api: connected/extended/energy>')
+        print('volvo-selenium.py [-h] -a <api: connected/extended/energy>')
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
-            print('volvo.py [-h] -a <api: connected/extended/energy')
+            print('volvo-selenium.py [-h] -a <api: connected/extended/energy')
             sys.exit()
         elif opt in ("-a", "--api"):
             api = arg

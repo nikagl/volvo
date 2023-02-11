@@ -1,0 +1,26 @@
+Switch volvolistvehicles "Volvo List Vehicles" (volvo) ["Switch"]
+Switch volvostartheater "Volvo Heater Start" (volvo) ["Switch"]
+Switch volvostopheater "Volvo Heater Stop" (volvo) ["Switch"]
+Switch volvolockcar "Volvo Car Lock" (volvo) ["Switch"]
+Switch volvounlockcar "Volvo Car Unlock" (volvo) ["Switch"]
+Switch volvoupdate "Volvo Charge Level Update" (volvo) ["Switch"]
+
+Number:Power volvochargelevel "Volvo Charge Level" (volvo) ["Measurement", "Power"]
+
+String volvoinvokestatus "Volvo Last Status" (volvo) ["Status"]
+String volvoresult "Volvo Last Query Result" (volvo) ["Status"]
+
+String volvousername "Volvo User Name" (volvo) ["Point"]
+String volvopassword "Volvo Password" (volvo) ["Point"]
+String volvovccapikey "Volvo VCC API-Key" (volvo) ["Point"]
+String volvovin "Volvo VIN" (volvo) ["Point"]
+
+Switch volvowindowrearleft "Volvo Window Left Rear" (volvo) ["Switch"]
+Switch volvowindowrearright "Volvo Window Right Rear" (volvo) ["Switch"]
+Switch volvowindowfrontleft "Volvo Window Left Front" (volvo) ["Switch"]
+Switch volvowindowfrontright "Volvo Window Right Front" (volvo) ["Switch"]
+
+String volvoaccess_token "Volvo Access Token" (volvo) ["Point"]
+String volvotoken_type "Volvo Token Type" (volvo) ["Point"]
+String volvorefresh_token "Volvo Refresh Token" (volvo) ["Point"]
+String volvoexpires_in "Volvo Token Expires In" (volvo) ["Point"]

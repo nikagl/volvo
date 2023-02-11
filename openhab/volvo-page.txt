@@ -1,0 +1,165 @@
+config:
+  label: "Controls: Volvo"
+  sidebar: true
+blocks:
+  - component: oh-block
+    config: {}
+    slots:
+      default:
+        - component: oh-grid-cells
+          config: {}
+          slots:
+            default:
+              - component: oh-label-cell
+                config:
+                  action: group
+                  actionGroupPopupItem: volvo
+                  item: volvoinvokestatus
+                  title: Volvo
+                  stateAsHeader: true
+                  expandable: false
+              - component: oh-label-cell
+                config:
+                  trendItem: volvochargelevel
+                  action: analyzer
+                  actionAnalyzerItems:
+                    - volvochargelevel
+                  item: volvochargelevel
+                  title: Volvo Charge Level
+                  stateAsHeader: true
+                  expandable: true
+              - component: oh-cell
+                config:
+                  color: blue
+                  action: toggle
+                  actionItem: volvoupdate
+                  actionCommand: ON
+                  actionCommandAlt: OFF
+                  item: volvoupdate
+                  title: Volvo Charge Level Update
+                  stateAsHeader: true
+              - component: oh-cell
+                config:
+                  color: blue
+                  action: toggle
+                  actionItem: volvolistvehicles
+                  actionCommand: ON
+                  actionCommandAlt: OFF
+                  item: volvolistvehicles
+                  title: Volvo List Vehicles
+                  stateAsHeader: true
+        - component: oh-grid-cells
+          config: {}
+          slots:
+            default:
+              - component: oh-cell
+                config:
+                  color: blue
+                  action: toggle
+                  actionItem: volvolockcar
+                  actionCommand: ON
+                  actionCommandAlt: OFF
+                  item: volvolockcar
+                  title: Volvo Lock Car
+                  stateAsHeader: true
+              - component: oh-cell
+                config:
+                  color: blue
+                  action: toggle
+                  actionItem: volvounlockcar
+                  actionCommand: ON
+                  actionCommandAlt: OFF
+                  item: volvounlockcar
+                  title: Volvo Unlock Car
+                  stateAsHeader: true
+              - component: oh-cell
+                config:
+                  color: blue
+                  action: toggle
+                  actionItem: volvostartheater
+                  actionCommand: ON
+                  actionCommandAlt: OFF
+                  item: volvostartheater
+                  title: Volvo Start Heater
+                  stateAsHeader: true
+              - component: oh-cell
+                config:
+                  color: blue
+                  action: toggle
+                  actionItem: volvostopheater
+                  actionCommand: ON
+                  actionCommandAlt: OFF
+                  item: volvostopheater
+                  title: Volvo Stop Heater
+                  stateAsHeader: true
+  - component: oh-block
+    config: {}
+    slots:
+      default:
+        - component: oh-grid-row
+          config: {}
+          slots:
+            default:
+              - component: oh-grid-col
+                config: {}
+                slots:
+                  default:
+                    - component: oh-input-card
+                      config:
+                        item: volvousername
+                        sendButton: true
+                        title: Volvo User Name
+                        type: text
+                        useDisplayState: true
+              - component: oh-grid-col
+                config: {}
+                slots:
+                  default:
+                    - component: oh-input-card
+                      config:
+                        item: volvopassword
+                        sendButton: true
+                        title: Volvo Password
+                        type: password
+                        useDisplayState: true
+              - component: oh-grid-col
+                config: {}
+                slots:
+                  default:
+                    - component: oh-input-card
+                      config:
+                        item: volvovccapikey
+                        sendButton: true
+                        title: Volvo VCC API-Key
+                        type: password
+                        useDisplayState: true
+              - component: oh-grid-col
+                config: {}
+                slots:
+                  default:
+                    - component: oh-input-card
+                      config:
+                        item: volvovin
+                        sendButton: true
+                        title: Volvo VIN
+                        type: password
+                        useDisplayState: true
+  - component: oh-block
+    config: {}
+    slots:
+      default:
+        - component: oh-grid-row
+          config: {}
+          slots:
+            default:
+              - component: oh-grid-col
+                config: {}
+                slots:
+                  default:
+                    - component: oh-label-card
+                      config:
+                        item: volvoresult
+                        title: Volvo Query Result
+masonry: null
+grid: []
+canvas: []

@@ -1,27 +1,103 @@
-// Define global parameters
-var vccapikey = volvovccapikey.state.toString()
-var vehicle_vin = volvovin.state.toString()
-var authURL = "https://volvoid.eu.volvocars.com/as/token.oauth2"
-var authContentType = "application/x-www-form-urlencoded"
-var authContent = "grant_type=password&username=" + volvousername.state.toString() + "&password=" + volvopassword.state.toString() +  "&scope=openid email profile care_by_volvo:financial_information:invoice:read care_by_volvo:financial_information:payment_method care_by_volvo:subscription:read customer:attributes customer:attributes:write order:attributes vehicle:attributes tsp_customer_api:all conve:brake_status conve:climatization_start_stop conve:command_accessibility conve:commands conve:diagnostics_engine_status conve:diagnostics_workshop conve:doors_status conve:engine_status conve:environment conve:fuel_status conve:honk_flash conve:lock conve:lock_status conve:navigation conve:odometer_status conve:trip_statistics conve:tyre_status conve:unlock conve:vehicle_relation conve:warnings conve:windows_status energy:battery_charge_level energy:charging_connection_status energy:charging_system_status energy:electric_range energy:estimated_charging_time energy:recharge_status vehicle:attributes"
-	var authHeaders = newHashMap(
-		"Authorization" -> "Basic aDRZZjBiOlU4WWtTYlZsNnh3c2c1WVFxWmZyZ1ZtSWFEcGhPc3kxUENhVXNpY1F0bzNUUjVrd2FKc2U0QVpkZ2ZJZmNMeXc=",
-		"User-agent" -> "okhttp/4.10.0"
-	)
-	
+import java.time.format.DateTimeFormatter
+
+// Define global functions
+val Functions$Function0<String> getToken = [ |
+	logInfo("Volvo", "Retrieving token")
+	if (volvoaccess_token.state == NULL ) {
+		logInfo("Heating", "Retrieve access token!")
+
+		var authURL = "https://volvoid.eu.volvocars.com/as/token.oauth2"
+		var authContentType = "application/x-www-form-urlencoded"
+		var authContent = "grant_type=password&username=" + volvousername.state.toString() + "&password=" + volvopassword.state.toString() +  "&scope=openid email profile care_by_volvo:financial_information:invoice:read care_by_volvo:financial_information:payment_method care_by_volvo:subscription:read customer:attributes customer:attributes:write order:attributes vehicle:attributes tsp_customer_api:all conve:brake_status conve:climatization_start_stop conve:command_accessibility conve:commands conve:diagnostics_engine_status conve:diagnostics_workshop conve:doors_status conve:engine_status conve:environment conve:fuel_status conve:honk_flash conve:lock conve:lock_status conve:navigation conve:odometer_status conve:trip_statistics conve:tyre_status conve:unlock conve:vehicle_relation conve:warnings conve:windows_status energy:battery_charge_level energy:charging_connection_status energy:charging_system_status energy:electric_range energy:estimated_charging_time energy:recharge_status vehicle:attributes"
+		var authHeaders = newHashMap(
+			"Authorization" -> "Basic aDRZZjBiOlU4WWtTYlZsNnh3c2c1WVFxWmZyZ1ZtSWFEcGhPc3kxUENhVXNpY1F0bzNUUjVrd2FKc2U0QVpkZ2ZJZmNMeXc=",
+			"User-agent" -> "okhttp/4.10.0"
+		)
+		var authResponse = sendHttpPostRequest(authURL, authContentType, authContent, authHeaders, 3000)
+		var access_token = transform("JSONPATH", "access_token", authResponse)
+		var refresh_token = transform("JSONPATH", "refresh_token", authResponse)
+		var token_type = transform("JSONPATH", "token_type", authResponse)
+		var expires_in = transform("JSONPATH", "expires_in", authResponse)
+
+		logInfo("Volvo", "token_type = {}", token_type)
+		logInfo("Volvo", "expires_in = {}", expires_in)
+
+		// Convert epoch to a human readable
+		val DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+		val long expires_in_milli = Integer.valueOf(expires_in) * 1000 - 60000 // expire 60 seconds before expiration
+		val long epoch = now.toInstant.toEpochMilli
+		val long epoch_plus = now.toInstant.toEpochMilli + expires_in_milli
+		val ZonedDateTime zdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(epoch), ZoneOffset.UTC);
+		val ZonedDateTime zdt_plus = ZonedDateTime.ofInstant(Instant.ofEpochMilli(epoch_plus), ZoneOffset.UTC);
+		val currentTime = zdt.format(formatter)
+		val currentTime_plus = zdt_plus.format(formatter)
+
+
+		logInfo("Volvo", "Updating access_token")
+		volvoaccess_token.postUpdate(access_token)
+		volvorefresh_token.postUpdate(refresh_token)
+		volvotoken_type.postUpdate(token_type)
+		volvoexpires_in.postUpdate(expires_in)
+		volvotoken_created.postUpdate(currentTime)
+		volvotoken_expiry.postUpdate(currentTime_plus)
+
+		return access_token
+	}
+
+	if(now.isAfter((volvotoken_expiry.state as DateTimeType).zonedDateTime)) {
+		logInfo("Volvo", "Refresh token!")
+
+		var authURL = "https://volvoid.eu.volvocars.com/as/token.oauth2"
+		var authContentType = "application/x-www-form-urlencoded"
+		var authContent = "grant_type=refresh_token&refresh_token=" + volvorefresh_token.state.toString()
+		var authHeaders = newHashMap(
+			"Authorization" -> "Basic aDRZZjBiOlU4WWtTYlZsNnh3c2c1WVFxWmZyZ1ZtSWFEcGhPc3kxUENhVXNpY1F0bzNUUjVrd2FKc2U0QVpkZ2ZJZmNMeXc=",
+			"User-agent" -> "okhttp/4.10.0"
+		)
+		var authResponse = sendHttpPostRequest(authURL, authContentType, authContent, authHeaders, 3000)
+		var access_token = transform("JSONPATH", "access_token", authResponse)
+		var refresh_token = transform("JSONPATH", "refresh_token", authResponse)
+		var token_type = transform("JSONPATH", "token_type", authResponse)
+		var expires_in = transform("JSONPATH", "expires_in", authResponse)
+
+		logInfo("Volvo", "token_type = {}", token_type)
+		logInfo("Volvo", "expires_in = {}", expires_in)
+
+		// Convert epoch to a human readable
+		val DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+		val long expires_in_milli = Integer.valueOf(expires_in) * 1000 - 60000 // expire 60 seconds before expiration
+		val long epoch = now.toInstant.toEpochMilli
+		val long epoch_plus = now.toInstant.toEpochMilli + expires_in_milli
+		val ZonedDateTime zdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(epoch), ZoneOffset.UTC);
+		val ZonedDateTime zdt_plus = ZonedDateTime.ofInstant(Instant.ofEpochMilli(epoch_plus), ZoneOffset.UTC);
+		val currentTime = zdt.format(formatter)
+		val currentTime_plus = zdt_plus.format(formatter)
+
+
+		logInfo("Volvo", "Updating access_token")
+		volvoaccess_token.postUpdate(access_token)
+		volvorefresh_token.postUpdate(refresh_token)
+		volvotoken_type.postUpdate(token_type)
+		volvoexpires_in.postUpdate(expires_in)
+		volvotoken_created.postUpdate(currentTime)
+		volvotoken_expiry.postUpdate(currentTime_plus)
+
+		return refresh_token
+	} else {
+		logInfo("Volvo", "Returning existing token")
+		return volvoaccess_token.state.toString()
+	}
+]
+
 // ************************************************
 rule "Trigger: Volvo List Verhicles"
 when
     Item volvolistvehicles changed to ON
 then
-	// First authenticate
-	var authResponse = sendHttpPostRequest(authURL, authContentType, authContent, authHeaders, 3000)
-	var access_token = transform("JSONPATH", "access_token", authResponse)
-	var token_type = transform("JSONPATH", "token_type", authResponse)
-	var expires_in = transform("JSONPATH", "expires_in", authResponse)
-
-	logInfo("Volvo", "token_type = {}", token_type)
-	logInfo("Volvo", "expires_in = {}", expires_in)
+	// Define global variables
+	var vccapikey = volvovccapikey.state.toString()
+	var vehicle_vin = volvovin.state.toString()
+	var access_token = getToken.apply()
 
 	// Then retrieve vehicle list
 	var vccURL = "https://api.volvocars.com/connected-vehicle/v1/vehicles/"
@@ -44,14 +120,10 @@ rule "Trigger: Volvo Lock Car"
 when
     Item volvolockcar changed to ON
 then
-	// First authenticate
-	var authResponse = sendHttpPostRequest(authURL, authContentType, authContent, authHeaders, 3000)
-	var access_token = transform("JSONPATH", "access_token", authResponse)
-	var token_type = transform("JSONPATH", "token_type", authResponse)
-	var expires_in = transform("JSONPATH", "expires_in", authResponse)
-
-	logInfo("Volvo", "token_type = {}", token_type)
-	logInfo("Volvo", "expires_in = {}", expires_in)
+	// Define global variables
+	var vccapikey = volvovccapikey.state.toString()
+	var vehicle_vin = volvovin.state.toString()
+	var access_token = getToken.apply()
 
 	// Then retrieve vehicle list
 	var vccURL = "https://api.volvocars.com/connected-vehicle/v2/vehicles/" + vehicle_vin + "/commands/lock"
@@ -78,14 +150,10 @@ rule "Trigger: Volvo Unlock Car"
 when
     Item volvounlockcar changed to ON
 then
-	// First authenticate
-	var authResponse = sendHttpPostRequest(authURL, authContentType, authContent, authHeaders, 3000)
-	var access_token = transform("JSONPATH", "access_token", authResponse)
-	var token_type = transform("JSONPATH", "token_type", authResponse)
-	var expires_in = transform("JSONPATH", "expires_in", authResponse)
-
-	logInfo("Volvo", "token_type = {}", token_type)
-	logInfo("Volvo", "expires_in = {}", expires_in)
+	// Define global variables
+	var vccapikey = volvovccapikey.state.toString()
+	var vehicle_vin = volvovin.state.toString()
+	var access_token = getToken.apply()
 
 	// Then retrieve vehicle list
 	var vccURL = "https://api.volvocars.com/connected-vehicle/v2/vehicles/" + vehicle_vin + "/commands/unlock"
@@ -112,14 +180,10 @@ rule "Trigger: Volvo Start Heater"
 when
     Item volvostartheater changed to ON
 then
-	// First authenticate
-	var authResponse = sendHttpPostRequest(authURL, authContentType, authContent, authHeaders, 3000)
-	var access_token = transform("JSONPATH", "access_token", authResponse)
-	var token_type = transform("JSONPATH", "token_type", authResponse)
-	var expires_in = transform("JSONPATH", "expires_in", authResponse)
-
-	logInfo("Volvo", "token_type = {}", token_type)
-	logInfo("Volvo", "expires_in = {}", expires_in)
+	// Define global variables
+	var vccapikey = volvovccapikey.state.toString()
+	var vehicle_vin = volvovin.state.toString()
+	var access_token = getToken.apply()
 
 	// Then retrieve vehicle list
 	var vccURL = "https://api.volvocars.com/connected-vehicle/v2/vehicles/" + vehicle_vin + "/commands/climatization-start"
@@ -145,14 +209,10 @@ rule "Trigger: Volvo Stop Heater"
 when
     Item volvostopheater changed to ON
 then
-	// First authenticate
-	var authResponse = sendHttpPostRequest(authURL, authContentType, authContent, authHeaders, 3000)
-	var access_token = transform("JSONPATH", "access_token", authResponse)
-	var token_type = transform("JSONPATH", "token_type", authResponse)
-	var expires_in = transform("JSONPATH", "expires_in", authResponse)
-
-	logInfo("Volvo", "token_type = {}", token_type)
-	logInfo("Volvo", "expires_in = {}", expires_in)
+	// Define global variables
+	var vccapikey = volvovccapikey.state.toString()
+	var vehicle_vin = volvovin.state.toString()
+	var access_token = getToken.apply()
 
 	// Then retrieve vehicle list
 	var vccURL = "https://api.volvocars.com/connected-vehicle/v2/vehicles/" + vehicle_vin + "/commands/climatization-stop"
@@ -179,14 +239,10 @@ when
     Time cron "0 0/1 * 1/1 * ? *" or
 	Item volvoupdate changed to ON
 then
-	// First authenticate
-	var authResponse = sendHttpPostRequest(authURL, authContentType, authContent, authHeaders, 3000)
-	var access_token = transform("JSONPATH", "access_token", authResponse)
-	var token_type = transform("JSONPATH", "token_type", authResponse)
-	var expires_in = transform("JSONPATH", "expires_in", authResponse)
-
-	logInfo("Volvo", "token_type = {}", token_type)
-	logInfo("Volvo", "expires_in = {}", expires_in)
+	// Define global variables
+	var vccapikey = volvovccapikey.state.toString()
+	var vehicle_vin = volvovin.state.toString()
+	var access_token = getToken.apply()
 
 	// Then retrieve vehicle list
 	var vccURL = "https://api.volvocars.com/connected-vehicle/v1/vehicles/" + vehicle_vin + "/battery-charge-level"
@@ -206,6 +262,7 @@ then
 	logInfo("Volvo", "value = {}", value)
 	logInfo("Volvo", "unit = {}", unit)
 	
+	volvochargelevel_refreshed.postUpdate(timestamp)
 	volvochargelevel.postUpdate(value)
 	volvoupdate.sendCommand(OFF)
 end

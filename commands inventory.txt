@@ -1,0 +1,322 @@
+https://api.volvocars.com/extended-vehicle/v1/vehicles
+{
+    "vehicles": [
+        {
+            "timestamp": 1599233422000,
+            "id": "{{VIN1}}"
+        },
+        {
+            "timestamp": 1637962790490,
+            "id": "{{VIN2}}"
+        }
+    ]
+}
+https://api.volvocars.com/extended-vehicle/v1/vehicles/{{VIN2}}/resources
+{
+    "resources": [
+        {
+            "version": "1.0",
+            "name": "sleepCycleStartTime",
+            "href": "https://api.volvocars.com/extended-vehicle/v1/vehicles/{{VIN2}}/resources/sleepCycleStartTime"
+        }
+    ]
+}
+https://api.volvocars.com/extended-vehicle/v1/vehicles/{{VIN2}}/resources/{resource}
+
+https://api.volvocars.com/energy/v1/vehicles/{{VIN2}}/recharge-status
+https://api.volvocars.com/energy/v1/vehicles/{{VIN2}}/recharge-status/battery-charge-level
+https://api.volvocars.com/energy/v1/vehicles/{{VIN2}}/recharge-status/electric-range
+https://api.volvocars.com/energy/v1/vehicles/{{VIN2}}/recharge-status/estimated-charging-time
+https://api.volvocars.com/energy/v1/vehicles/{{VIN2}}/recharge-status/charging-connection-status
+https://api.volvocars.com/energy/v1/vehicles/{{VIN2}}/recharge-status/charging-system-status
+
+
+https://api.volvocars.com/connected-vehicle/v1/vehicles
+    "data": [
+        {
+            "vin": "{{VIN1}}"
+        },
+        {
+            "vin": "{{VIN2}}"
+        }
+    ],
+    "pagination": {
+        "limit": 2,
+        "total": 2
+    }
+https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}
+    "data": {
+        "modelYear": "2021",
+        "vin": "{{VIN2}}",
+        "externalColour": "Snow",
+        "images": {
+            "exteriorDefaultUrl": "https://cas.volvocars.com/image/dynamic/MY21_2017/536/exterior-v1/R6/70700/R171/FN02/2G03/TC06/TP05/LR02/JT02/GR08/T101/TJ02/TM04/JG02/CB04/EV02/JB0C/T201/LF05/_/_/_/_/_/_/_/default.png?market=nl&client=connected-vehicle-api&w=1920&bg=descriptive-studio&angle=1&fallback",
+            "interiorDefaultUrl": "https://cas.volvocars.com/image/dynamic/MY21_2017/536/interior-v2/R6/E/RB0000/NC0D/DI03/RU0A/2G03/PD02/NP02/CB04/EV02/K504/K901/FH01/_/_/default.png?market=nl&client=connected-vehicle-api&w=1920&bg=00000000&angle=0&fallback"
+        },
+        "descriptions": {
+            "model": "XC40",
+            "upholstery": "CHARCOAL/AGNES/CHARCOAL",
+            "steering": "LEFT HAND DRIVE"
+        }
+    }
+https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/windows
+    "data": {
+        "rearLeft": {
+            "value": "CLOSED",
+            "timestamp": "2023-02-11T18:19:16Z"
+        },
+        "rearRight": {
+            "value": "OPEN",
+            "timestamp": "2023-02-11T18:19:16Z"
+        },
+        "frontLeft": {
+            "value": "CLOSED",
+            "timestamp": "2023-02-11T18:19:16Z"
+        },
+        "frontRight": {
+            "value": "CLOSED",
+            "timestamp": "2023-02-11T18:19:16Z"
+        }
+    }
+https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/warnings
+https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/tyres
+    "data": {
+        "rearRight": {
+            "value": "TYRE_PRESSURE_WARNING_TYPE_NO_WARN",
+            "timestamp": "2023-02-11T18:09:03Z"
+        },
+        "rearLeft": {
+            "value": "TYRE_PRESSURE_WARNING_TYPE_NO_WARN",
+            "timestamp": "2023-02-11T18:09:03Z"
+        },
+        "frontLeft": {
+            "value": "TYRE_PRESSURE_WARNING_TYPE_NO_WARN",
+            "timestamp": "2023-02-11T18:09:03Z"
+        },
+        "frontRight": {
+            "value": "TYRE_PRESSURE_WARNING_TYPE_NO_WARN",
+            "timestamp": "2023-02-11T18:09:03Z"
+        }
+    }
+https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/statistics
+    "data": {
+        "tripMeter1": {
+            "value": "53",
+            "unit": "kilometers",
+            "timestamp": "2023-02-11T18:09:03Z"
+        },
+        "tripMeter2": {
+            "value": "0",
+            "unit": "kilometers",
+            "timestamp": "2023-02-11T18:09:03Z"
+        },
+        "averageFuelConsumption": {
+            "value": "0.0",
+            "unit": "liters_per_100_kilometers",
+            "timestamp": "2023-02-11T18:09:03Z"
+        },
+        "distanceToEmpty": {
+            "value": "0",
+            "unit": "kilometers",
+            "timestamp": "2023-02-11T18:09:03Z"
+        },
+        "averageSpeed": {
+            "value": "287",
+            "unit": "kilometers_per_hour",
+            "timestamp": "2023-02-11T18:09:03Z"
+        }
+    }
+https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/requests
+https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/requests/{id}
+https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/odometer
+    "data": {
+        "odometer": {
+            "value": "3382",
+            "unit": "kilometers",
+            "timestamp": "2023-02-11T18:09:03Z"
+        }
+    }
+https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/fuel
+    "data": {
+        "fuelAmount": {
+            "value": "0",
+            "unit": "liters",
+            "timestamp": "2023-02-11T18:09:03Z"
+        }
+    }
+https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/environment
+https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/engine
+    "data": {
+        "engineCoolantLevel": {
+            "value": "FLUID_LEVEL_HIGH",
+            "timestamp": "2023-02-11T18:09:03Z"
+        },
+        "oilLevel": {
+            "value": "OIL_LEVEL_STATUS_OIL_LVL_OK",
+            "timestamp": "2023-02-11T18:09:03Z"
+        }
+    }
+
+https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/engine-status
+https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/doors
+    "data": {
+        "carLocked": {
+            "value": "LOCKED",
+            "timestamp": "2023-02-11T18:19:16Z"
+        },
+        "frontLeft": {
+            "value": "CLOSED",
+            "timestamp": "2023-02-11T18:19:16Z"
+        },
+        "frontRight": {
+            "value": "CLOSED",
+            "timestamp": "2023-02-11T18:19:16Z"
+        },
+        "rearLeft": {
+            "value": "CLOSED",
+            "timestamp": "2023-02-11T18:19:16Z"
+        },
+        "rearRight": {
+            "value": "CLOSED",
+            "timestamp": "2023-02-11T18:19:16Z"
+        },
+        "hood": {
+            "value": "CLOSED",
+            "timestamp": "2023-02-11T18:19:16Z"
+        },
+        "tailGate": {
+            "value": "CLOSED",
+            "timestamp": "2023-02-11T18:19:16Z"
+        }
+    }
+https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/diagnostics
+    "data": {
+        "engineHoursToService": {
+            "value": "1138",
+            "unit": "hours",
+            "timestamp": "2023-02-11T18:09:03Z"
+        },
+        "serviceStatus": {
+            "value": "586",
+            "timestamp": "2023-02-11T18:09:03Z"
+        },
+        "washerFluidLevel": {
+            "value": "WASHER_FLUID_LEVEL_STATUS_OFF",
+            "timestamp": "2023-02-11T18:09:03Z"
+        },
+        "serviceTrigger": {
+            "value": "SERVICE_WARNING_NO_SERVICE_REMINDER_TRIGGERED",
+            "timestamp": "2023-02-11T18:09:03Z"
+        },
+        "kmToService": {
+            "value": "21871",
+            "unit": "kilometers",
+            "timestamp": "2023-02-11T18:09:03Z"
+        }
+    }
+https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands
+    "data": [
+        {
+            "command": "CLIMATIZATION_START",
+            "href": "https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/climatization-start"
+        },
+        {
+            "command": "CLIMATIZATION_STOP",
+            "href": "https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/climatization-stop"
+        },
+        {
+            "command": "ENGINE_START",
+            "href": "https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/engine-start"
+        },
+        {
+            "command": "ENGINE_STOP",
+            "href": "https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/engine-stop"
+        },
+        {
+            "command": "FLASH",
+            "href": "https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/flash"
+        },
+        {
+            "command": "HONK",
+            "href": "https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/honk"
+        },
+        {
+            "command": "HONK_AND_FLASH",
+            "href": "https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/honk-flash"
+        },
+        {
+            "command": "LOCK",
+            "href": "https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/lock"
+        },
+        {
+            "command": "SEND_NAVI_POI",
+            "href": "https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/navi-point-of-interest"
+        },
+        {
+            "command": "UNLOCK",
+            "href": "https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/unlock"
+        }
+    ]
+https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/command-accessibility
+https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/brakes
+    "data": {
+        "brakeFluid": {
+            "value": "FLUID_LEVEL_HIGH",
+            "timestamp": "2023-02-11T18:09:03Z"
+        }
+    }
+https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/battery-charge-level
+    "data": {
+        "batteryChargeLevel": {
+            "value": "88.0",
+            "unit": "percentage",
+            "timestamp": "2023-02-11T18:19:17Z"
+        }
+    }
+
+
+https://api.volvocars.com/connected-vehicle/v2/vehicles/{{VIN2}}/commands/unlock
+application/vnd.volvocars.api.connected-vehicle.unlock.v2+json
+https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/navi-point-of-interest
+application/vnd.volvocars.api.connected-vehicle.navipointofinterest.v1+json
+https://api.volvocars.com/connected-vehicle/v2/vehicles/{{VIN2}}/commands/lock
+application/vnd.volvocars.api.connected-vehicle.lock.v2+json
+https://api.volvocars.com/connected-vehicle/v2/vehicles/{{VIN2}}/commands/honk
+application/vnd.volvocars.api.connected-vehicle.honkandflash.v2+json
+https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/honk-flash
+application/vnd.volvocars.api.connected-vehicle.honkandflash.v1+json
+https://api.volvocars.com/connected-vehicle/v2/vehicles/{{VIN2}}/commands/flash
+application/vnd.volvocars.api.connected-vehicle.honkandflash.v2+json
+https://api.volvocars.com/connected-vehicle/v2/vehicles/{{VIN2}}/commands/engine-stop
+application/vnd.volvocars.api.connected-vehicle.enginestop.v2+json
+https://api.volvocars.com/connected-vehicle/v2/vehicles/{{VIN2}}/commands/engine-start
+application/vnd.volvocars.api.connected-vehicle.enginestart.v2+json
+https://api.volvocars.com/connected-vehicle/v2/vehicles/{{VIN2}}/commands/climatization-stop
+application/vnd.volvocars.api.connected-vehicle.climatizationstop.v2+json
+https://api.volvocars.com/connected-vehicle/v2/vehicles/{{VIN2}}/commands/climatization-start
+application/vnd.volvocars.api.connected-vehicle.climatizationstart.v2+json
+
+https://api.volvocars.com/connected-vehicle/v2/vehicles/{{VIN2}}/commands/pre-cleaning-stop
+application/vnd.volvocars.api.connected-vehicle.precleaningstop.v2+json
+https://api.volvocars.com/connected-vehicle/v2/vehicles/{{VIN2}}/commands/pre-cleaning-start
+application/vnd.volvocars.api.connected-vehicle.precleaningstart.v2+json
+https://api.volvocars.com/connected-vehicle/v2/vehicles/{{VIN2}}/commands/honk-flash
+application/vnd.volvocars.api.connected-vehicle.honkandflash.v2+json
+https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/requests/search
+application/vnd.volvocars.api.connected-vehicle.searchrequestlist.v1+json
+https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/unlock
+application/vnd.volvocars.api.connected-vehicle.unlock.v1+json
+https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/lock
+application/vnd.volvocars.api.connected-vehicle.lock.v1+json
+https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/honk
+application/vnd.volvocars.api.connected-vehicle.honk.v1+json
+https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/flash
+application/vnd.volvocars.api.connected-vehicle.flash.v1+json
+https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/engine-stop
+application/vnd.volvocars.api.connected-vehicle.enginestop.v1+json
+https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/engine-start
+application/vnd.volvocars.api.connected-vehicle.enginestart.v1+json
+https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/climatization-stop
+application/vnd.volvocars.api.connected-vehicle.climatizationstop.v1+json
+https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/climatization-start
+application/vnd.volvocars.api.connected-vehicle.climatizationstart.v1+json

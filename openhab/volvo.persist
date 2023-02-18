@@ -18,3 +18,5 @@ Items {
     // additionally, persist all temperature and weather values every hour
     // Temperature*, Weather* : strategy = everyHour
 }
+
+// Persistence seems to not work - added default rule additionally...

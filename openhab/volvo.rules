@@ -1,14 +1,10 @@
 import java.time.format.DateTimeFormatter
 
-// Define global functions
-val Functions$Function0<String> getToken = [ |
-	logInfo("Volvo", "Retrieving token")
-	if (volvoaccess_token.state == NULL ) {
-		logInfo("Heating", "Retrieve access token!")
-
+// Function to authenticate the Volvo username/password and get a token
+val Functions$Function1 <String, String> authenticateVolvo = [
+    authContent |
 		var authURL = "https://volvoid.eu.volvocars.com/as/token.oauth2"
 		var authContentType = "application/x-www-form-urlencoded"
-		var authContent = "grant_type=password&username=" + volvousername.state.toString() + "&password=" + volvopassword.state.toString() +  "&scope=openid email profile care_by_volvo:financial_information:invoice:read care_by_volvo:financial_information:payment_method care_by_volvo:subscription:read customer:attributes customer:attributes:write order:attributes vehicle:attributes tsp_customer_api:all conve:brake_status conve:climatization_start_stop conve:command_accessibility conve:commands conve:diagnostics_engine_status conve:diagnostics_workshop conve:doors_status conve:engine_status conve:environment conve:fuel_status conve:honk_flash conve:lock conve:lock_status conve:navigation conve:odometer_status conve:trip_statistics conve:tyre_status conve:unlock conve:vehicle_relation conve:warnings conve:windows_status energy:battery_charge_level energy:charging_connection_status energy:charging_system_status energy:electric_range energy:estimated_charging_time energy:recharge_status vehicle:attributes"
 		var authHeaders = newHashMap(
 			"Authorization" -> "Basic aDRZZjBiOlU4WWtTYlZsNnh3c2c1WVFxWmZyZ1ZtSWFEcGhPc3kxUENhVXNpY1F0bzNUUjVrd2FKc2U0QVpkZ2ZJZmNMeXc=",
 			"User-agent" -> "okhttp/4.10.0"
@@ -22,97 +18,145 @@ val Functions$Function0<String> getToken = [ |
 		logInfo("Volvo", "token_type = {}", token_type)
 		logInfo("Volvo", "expires_in = {}", expires_in)
 
-		// Convert epoch to a human readable
-		val DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
-		val long expires_in_milli = Integer.valueOf(expires_in) * 1000 - 60000 // expire 60 seconds before expiration
-		val long epoch = now.toInstant.toEpochMilli
-		val long epoch_plus = now.toInstant.toEpochMilli + expires_in_milli
-		val ZonedDateTime zdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(epoch), ZoneOffset.UTC);
-		val ZonedDateTime zdt_plus = ZonedDateTime.ofInstant(Instant.ofEpochMilli(epoch_plus), ZoneOffset.UTC);
-		val currentTime = zdt.format(formatter)
-		val currentTime_plus = zdt_plus.format(formatter)
+// 2023-02-15 23:05:01.469 [INFO ] [org.openhab.core.model.script.Volvo ] - token_type = {"error_description":"We didn't recognize the username or password you entered. Please try again.","error":"invalid_grant"}
+// 2023-02-15 23:05:01.470 [INFO ] [org.openhab.core.model.script.Volvo ] - expires_in = {"error_description":"We didn't recognize the username or password you entered. Please try again.","error":"invalid_grant"}
 
+		if (token_type.contains("error_description")) {
+			logError("Volvo", "No access token found! Full response: ", authResponse)
+			return ""
+		} else {
+			// Convert epoch to a human readable
+			val DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+			val long expires_in_milli = Integer.valueOf(expires_in) * 1000 - 60000 // expire 60 seconds before expiration
+			val long epoch = now.toInstant.toEpochMilli
+			val long epoch_plus = now.toInstant.toEpochMilli + expires_in_milli
+			val ZonedDateTime zdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(epoch), ZoneOffset.UTC);
+			val ZonedDateTime zdt_plus = ZonedDateTime.ofInstant(Instant.ofEpochMilli(epoch_plus), ZoneOffset.UTC);
+			val currentTime = zdt.format(formatter)
+			val currentTime_plus = zdt_plus.format(formatter)
 
-		logInfo("Volvo", "Updating access_token")
-		volvoaccess_token.postUpdate(access_token)
-		volvorefresh_token.postUpdate(refresh_token)
-		volvotoken_type.postUpdate(token_type)
-		volvoexpires_in.postUpdate(expires_in)
-		volvotoken_created.postUpdate(currentTime)
-		volvotoken_expiry.postUpdate(currentTime_plus)
+			logInfo("Volvo", "Updating access_token")
+			volvoaccess_token.postUpdate(access_token)
+			volvorefresh_token.postUpdate(refresh_token)
+			volvotoken_type.postUpdate(token_type)
+			volvoexpires_in.postUpdate(expires_in)
+			volvotoken_created.postUpdate(currentTime)
+			volvotoken_expiry.postUpdate(currentTime_plus)
 
-		return access_token
-	}
+			return access_token
+		}
+]
 
-	if(now.isAfter((volvotoken_expiry.state as DateTimeType).zonedDateTime)) {
-		logInfo("Volvo", "Refresh token!")
+// Function to either retrieve, refresh or return existing token
+val Functions$Function1 <Functions.Function1<String, String>, String> getToken = [ 
+	Functions.Function1<String, String> authenticateVolvo |
+		logInfo("Volvo", "Retrieving token")
 
-		var authURL = "https://volvoid.eu.volvocars.com/as/token.oauth2"
-		var authContentType = "application/x-www-form-urlencoded"
-		var authContent = "grant_type=refresh_token&refresh_token=" + volvorefresh_token.state.toString()
-		var authHeaders = newHashMap(
-			"Authorization" -> "Basic aDRZZjBiOlU4WWtTYlZsNnh3c2c1WVFxWmZyZ1ZtSWFEcGhPc3kxUENhVXNpY1F0bzNUUjVrd2FKc2U0QVpkZ2ZJZmNMeXc=",
-			"User-agent" -> "okhttp/4.10.0"
+		if (volvoaccess_token.state == NULL ) {
+			logInfo("Heating", "Retrieve access token!")
+			return authenticateVolvo.apply("grant_type=password&username=" + volvousername.state.toString() + "&password=" + volvopassword.state.toString() +  "&scope=openid email profile care_by_volvo:financial_information:invoice:read care_by_volvo:financial_information:payment_method care_by_volvo:subscription:read customer:attributes customer:attributes:write order:attributes vehicle:attributes tsp_customer_api:all conve:brake_status conve:climatization_start_stop conve:command_accessibility conve:commands conve:diagnostics_engine_status conve:diagnostics_workshop conve:doors_status conve:engine_status conve:environment conve:fuel_status conve:honk_flash conve:lock conve:lock_status conve:navigation conve:odometer_status conve:trip_statistics conve:tyre_status conve:unlock conve:vehicle_relation conve:warnings conve:windows_status energy:battery_charge_level energy:charging_connection_status energy:charging_system_status energy:electric_range energy:estimated_charging_time energy:recharge_status vehicle:attributes")
+		}
+
+		if(now.isAfter((volvotoken_expiry.state as DateTimeType).zonedDateTime)) {
+			logInfo("Volvo", "Refresh token!")
+			return authenticateVolvo.apply("grant_type=refresh_token&refresh_token=" + volvorefresh_token.state.toString())
+		} else {
+			logInfo("Volvo", "Returning existing token")
+			return volvoaccess_token.state.toString()
+		}
+]
+
+// Function to run a vcc get request
+val Functions$Function3 <String, String, String, String> vccGetRequest = [ 
+	access_token,
+	vccURL,
+	acceptHeader |
+		// Define global variables
+		var vccapikey = volvovccapikey.state.toString()
+
+		// Then retrieve vehicle list
+		var vccHeaders = newHashMap(
+			"Authorization" -> "Bearer " + access_token,
+			"vcc-api-key" -> vccapikey,
+			"accept" -> acceptHeader
 		)
-		var authResponse = sendHttpPostRequest(authURL, authContentType, authContent, authHeaders, 3000)
-		var access_token = transform("JSONPATH", "access_token", authResponse)
-		var refresh_token = transform("JSONPATH", "refresh_token", authResponse)
-		var token_type = transform("JSONPATH", "token_type", authResponse)
-		var expires_in = transform("JSONPATH", "expires_in", authResponse)
+		var vccResponse = sendHttpGetRequest(vccURL, vccHeaders, 3000)
+		
+		logInfo("Volvo", "vccURL = {}", vccURL)
+		logInfo("Volvo", "vccResponse = {}", vccResponse)
 
-		logInfo("Volvo", "token_type = {}", token_type)
-		logInfo("Volvo", "expires_in = {}", expires_in)
+		return vccResponse
+]
 
-		// Convert epoch to a human readable
-		val DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
-		val long expires_in_milli = Integer.valueOf(expires_in) * 1000 - 60000 // expire 60 seconds before expiration
-		val long epoch = now.toInstant.toEpochMilli
-		val long epoch_plus = now.toInstant.toEpochMilli + expires_in_milli
-		val ZonedDateTime zdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(epoch), ZoneOffset.UTC);
-		val ZonedDateTime zdt_plus = ZonedDateTime.ofInstant(Instant.ofEpochMilli(epoch_plus), ZoneOffset.UTC);
-		val currentTime = zdt.format(formatter)
-		val currentTime_plus = zdt_plus.format(formatter)
+// Function to run a vcc post request
+val Functions$Function4 <String, String, String, String, String> vccPostRequest = [ 
+	access_token,
+	vccURL,
+	acceptHeader,
+	vccContentType |
+		// Define global variables
+		var vccapikey = volvovccapikey.state.toString()
 
+		// Then retrieve vehicle list
+		var vccContent = ""
+		var vccTimeout = 30000
+		var vccHeaders = newHashMap(
+			"Authorization" -> "Bearer " + access_token,
+			"vcc-api-key" -> vccapikey,
+			"accept" -> acceptHeader
+		)
+		var vccResponse = sendHttpPostRequest(vccURL, vccContentType, vccContent, vccHeaders, vccTimeout)
+		
+		logInfo("Volvo", "vccURL = {}", vccURL)
+		logInfo("Volvo", "vccResponse = {}", vccResponse)
 
-		logInfo("Volvo", "Updating access_token")
-		volvoaccess_token.postUpdate(access_token)
-		volvorefresh_token.postUpdate(refresh_token)
-		volvotoken_type.postUpdate(token_type)
-		volvoexpires_in.postUpdate(expires_in)
-		volvotoken_created.postUpdate(currentTime)
-		volvotoken_expiry.postUpdate(currentTime_plus)
+		volvoinvokestatus.postUpdate(transform("JSONPATH", "data.invokeStatus", vccResponse))
 
-		return refresh_token
-	} else {
-		logInfo("Volvo", "Returning existing token")
-		return volvoaccess_token.state.toString()
-	}
+		return vccResponse
 ]
 
 // ************************************************
-rule "Trigger: Volvo List Verhicles"
+rule "Trigger: Volvo List Vehicles"
 when
     Item volvolistvehicles changed to ON
 then
-	// Define global variables
-	var vccapikey = volvovccapikey.state.toString()
-	var vehicle_vin = volvovin.state.toString()
-	var access_token = getToken.apply()
+	// https://api.volvocars.com/extended-vehicle/v1/vehicles
+	// {
+	//     "vehicles": [
+	//         {
+	//             "timestamp": 1599233422000,
+	//             "id": "{{VIN1}}"
+	//         },
+	//         {
+	//             "timestamp": 1637962790490,
+	//             "id": "{{VIN2}}"
+	//         }
+	//     ]
+	// }
 
-	// Then retrieve vehicle list
-	var vccURL = "https://api.volvocars.com/connected-vehicle/v1/vehicles/"
-	var vccHeaders = newHashMap(
-		"Authorization" -> "Bearer " + access_token,
-		"vcc-api-key" -> vccapikey,
-		"accept" -> "application/vnd.volvocars.api.connected-vehicle.vehiclelist.v1+json"
-	)
-	var vccResponse = sendHttpGetRequest(vccURL, vccHeaders, 3000)
-	
-	logInfo("Volvo", "vccURL = {}", vccURL)
-	logInfo("Volvo", "vccResponse = {}", vccResponse)
-	
-	volvoresult.postUpdate(vccResponse)
-	volvolistvehicles.sendCommand(OFF)
+	// https://api.volvocars.com/connected-vehicle/v1/vehicles
+	//     "data": [
+	//         {
+	//             "vin": "{{VIN1}}"
+	//         },
+	//         {
+	//             "vin": "{{VIN2}}"
+	//         }
+	//     ],
+	//     "pagination": {
+	//         "limit": 2,
+	//         "total": 2
+	//     }
+
+	var access_token = getToken.apply(authenticateVolvo)
+	if (access_token != "") {
+		var vccURL = "https://api.volvocars.com/connected-vehicle/v1/vehicles/"
+		var acceptHeader = "application/vnd.volvocars.api.connected-vehicle.vehiclelist.v1+json"
+		val vccResponse = vccGetRequest.apply(access_token, vccURL, acceptHeader)
+
+		volvoresult.postUpdate(vccResponse)
+		volvolistvehicles.sendCommand(OFF)
+	}
 end
 
 // ************************************************
@@ -120,29 +164,22 @@ rule "Trigger: Volvo Lock Car"
 when
     Item volvolockcar changed to ON
 then
-	// Define global variables
-	var vccapikey = volvovccapikey.state.toString()
-	var vehicle_vin = volvovin.state.toString()
-	var access_token = getToken.apply()
+	var access_token = getToken.apply(authenticateVolvo)
+	if (access_token != "") {
+		var vehicle_vin = volvovin.state.toString()
+		var vccURL = "https://api.volvocars.com/connected-vehicle/v2/vehicles/" + vehicle_vin + "/commands/lock"
+		var acceptHeader = "application/vnd.volvocars.api.connected-vehicle.lock.v2+json"
+		var vccContentType = acceptHeader
+		val vccResponse = vccPostRequest.apply(access_token, vccURL, acceptHeader, vccContentType)
 
-	// Then retrieve vehicle list
-	var vccURL = "https://api.volvocars.com/connected-vehicle/v2/vehicles/" + vehicle_vin + "/commands/lock"
-	var vccContentType = "application/vnd.volvocars.api.connected-vehicle.lock.v2+json"
-	var vccContent = ""
-	var vccTimeout = 30000
-	var vccHeaders = newHashMap(
-		"Authorization" -> "Bearer " + access_token,
-		"vcc-api-key" -> vccapikey,
-		"accept" -> vccContentType
-	)
-	var vccResponse = sendHttpPostRequest(vccURL, vccContentType, vccContent, vccHeaders, vccTimeout)
-	
-	logInfo("Volvo", "vccURL = {}", vccURL)
-	logInfo("Volvo", "vccResponse = {}", vccResponse)
+	// https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/lock
+	// application/vnd.volvocars.api.connected-vehicle.lock.v1+json
+	// https://api.volvocars.com/connected-vehicle/v2/vehicles/{{VIN2}}/commands/lock
+	// application/vnd.volvocars.api.connected-vehicle.lock.v2+json
 
-	volvoinvokestatus.postUpdate(transform("JSONPATH", "data.invokeStatus", vccResponse))
-	volvoresult.postUpdate(vccResponse)
-	volvolockcar.sendCommand(OFF)
+		volvoresult.postUpdate(vccResponse)
+		volvolockcar.sendCommand(OFF)
+	}
 end
 
 // ************************************************
@@ -150,29 +187,23 @@ rule "Trigger: Volvo Unlock Car"
 when
     Item volvounlockcar changed to ON
 then
-	// Define global variables
-	var vccapikey = volvovccapikey.state.toString()
-	var vehicle_vin = volvovin.state.toString()
-	var access_token = getToken.apply()
+	var access_token = getToken.apply(authenticateVolvo)
+	if (access_token != "") {
+		var vehicle_vin = volvovin.state.toString()
+		var vccURL = "https://api.volvocars.com/connected-vehicle/v2/vehicles/" + vehicle_vin + "/commands/unlock"
+		var acceptHeader = "application/vnd.volvocars.api.connected-vehicle.unlock.v2+json"
+		var vccContentType = acceptHeader
+		val vccResponse = vccPostRequest.apply(access_token, vccURL, acceptHeader, vccContentType)
 
-	// Then retrieve vehicle list
-	var vccURL = "https://api.volvocars.com/connected-vehicle/v2/vehicles/" + vehicle_vin + "/commands/unlock"
-	var vccContentType = "application/vnd.volvocars.api.connected-vehicle.unlock.v2+json"
-	var vccContent = ""
-	var vccTimeout = 30000
-	var vccHeaders = newHashMap(
-		"Authorization" -> "Bearer " + access_token,
-		"vcc-api-key" -> vccapikey,
-		"accept" -> vccContentType
-	)
-	var vccResponse = sendHttpPostRequest(vccURL, vccContentType, vccContent, vccHeaders, vccTimeout)
-	
-	logInfo("Volvo", "vccURL = {}", vccURL)
-	logInfo("Volvo", "vccResponse = {}", vccResponse)
 
-	volvoinvokestatus.postUpdate(transform("JSONPATH", "data.invokeStatus", vccResponse))
-	volvoresult.postUpdate(vccResponse)
-	volvounlockcar.sendCommand(OFF)
+	// https://api.volvocars.com/connected-vehicle/v2/vehicles/{{VIN2}}/commands/unlock
+	// application/vnd.volvocars.api.connected-vehicle.unlock.v2+json
+	// https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/unlock
+	// application/vnd.volvocars.api.connected-vehicle.unlock.v1+json
+
+		volvoresult.postUpdate(vccResponse)
+		volvounlockcar.sendCommand(OFF)
+	}
 end
 
 // ************************************************
@@ -180,28 +211,22 @@ rule "Trigger: Volvo Start Heater"
 when
     Item volvostartheater changed to ON
 then
-	// Define global variables
-	var vccapikey = volvovccapikey.state.toString()
-	var vehicle_vin = volvovin.state.toString()
-	var access_token = getToken.apply()
+	var access_token = getToken.apply(authenticateVolvo)
+	if (access_token != "") {
+		var vehicle_vin = volvovin.state.toString()
+		var vccURL = "https://api.volvocars.com/connected-vehicle/v2/vehicles/" + vehicle_vin + "/commands/climatization-start"
+		var acceptHeader = "application/vnd.volvocars.api.connected-vehicle.climatizationstart.v2+json"
+		var vccContentType = acceptHeader
+		val vccResponse = vccPostRequest.apply(access_token, vccURL, acceptHeader, vccContentType)
 
-	// Then retrieve vehicle list
-	var vccURL = "https://api.volvocars.com/connected-vehicle/v2/vehicles/" + vehicle_vin + "/commands/climatization-start"
-	var vccContentType = "application/vnd.volvocars.api.connected-vehicle.climatizationstart.v2+json"
-	var vccContent = "runtimeMinutes=30"
-	var vccTimeout = 30000
-	var vccHeaders = newHashMap(
-		"Authorization" -> "Bearer " + access_token,
-		"vcc-api-key" -> vccapikey,
-		"accept" -> vccContentType
-	)
-	var vccResponse = sendHttpPostRequest(vccURL, vccContentType, vccContent, vccHeaders, vccTimeout)
-	
-	logInfo("Volvo", "vccURL = {}", vccURL)
-	logInfo("Volvo", "vccResponse = {}", vccResponse)
+	// https://api.volvocars.com/connected-vehicle/v2/vehicles/{{VIN2}}/commands/climatization-start
+	// application/vnd.volvocars.api.connected-vehicle.climatizationstart.v2+json
+	// https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/climatization-start
+	// application/vnd.volvocars.api.connected-vehicle.climatizationstart.v1+json
 
-	volvoresult.postUpdate(vccResponse)
-	volvostartheater.sendCommand(OFF)
+		volvoresult.postUpdate(vccResponse)
+		volvostartheater.sendCommand(OFF)
+	}
 end
 
 // ************************************************
@@ -209,60 +234,543 @@ rule "Trigger: Volvo Stop Heater"
 when
     Item volvostopheater changed to ON
 then
-	// Define global variables
-	var vccapikey = volvovccapikey.state.toString()
-	var vehicle_vin = volvovin.state.toString()
-	var access_token = getToken.apply()
+	var access_token = getToken.apply(authenticateVolvo)
+	if (access_token != "") {
+		var vehicle_vin = volvovin.state.toString()
+		var vccURL = "https://api.volvocars.com/connected-vehicle/v2/vehicles/" + vehicle_vin + "/commands/climatization-stop"
+		var acceptHeader = "application/vnd.volvocars.api.connected-vehicle.climatizationstop.v2+json"
+		var vccContentType = acceptHeader
+		val vccResponse = vccPostRequest.apply(access_token, vccURL, acceptHeader, vccContentType)
 
-	// Then retrieve vehicle list
-	var vccURL = "https://api.volvocars.com/connected-vehicle/v2/vehicles/" + vehicle_vin + "/commands/climatization-stop"
-	var vccContentType = "application/vnd.volvocars.api.connected-vehicle.climatizationstop.v2+json"
-	var vccContent = ""
-	var vccTimeout = 30000
-	var vccHeaders = newHashMap(
-		"Authorization" -> "Bearer " + access_token,
-		"vcc-api-key" -> vccapikey,
-		"accept" -> vccContentType
-	)
-	var vccResponse = sendHttpPostRequest(vccURL, vccContentType, vccContent, vccHeaders, vccTimeout)
-	
-	logInfo("Volvo", "vccURL = {}", vccURL)
-	logInfo("Volvo", "vccResponse = {}", vccResponse)
+	// https://api.volvocars.com/connected-vehicle/v2/vehicles/{{VIN2}}/commands/climatization-stop
+	// application/vnd.volvocars.api.connected-vehicle.climatizationstop.v2+json
+	// https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/climatization-stop
+	// application/vnd.volvocars.api.connected-vehicle.climatizationstop.v1+json
 
-	volvoresult.postUpdate(vccResponse)
-	volvostopheater.sendCommand(OFF)
+		volvoresult.postUpdate(vccResponse)
+		volvostopheater.sendCommand(OFF)
+	}
 end
 
 // ************************************************
-rule "Trigger: Volvo Check Battery"
+rule "Trigger: Volvo Retrieve Status"
 when
     Time cron "0 0/1 * 1/1 * ? *" or
 	Item volvoupdate changed to ON
 then
-	// Define global variables
-	var vccapikey = volvovccapikey.state.toString()
-	var vehicle_vin = volvovin.state.toString()
-	var access_token = getToken.apply()
+	// define global variables
+	var access_token = getToken.apply(authenticateVolvo)
+	if (access_token != "") {
+		var vehicle_vin = volvovin.state.toString()
 
-	// Then retrieve vehicle list
-	var vccURL = "https://api.volvocars.com/connected-vehicle/v1/vehicles/" + vehicle_vin + "/battery-charge-level"
-	var vccHeaders = newHashMap(
-		"Authorization" -> "Bearer " + access_token,
-		"vcc-api-key" -> vccapikey,
-		"accept" -> "application/vnd.volvocars.api.connected-vehicle.vehicledata.v1+json"
-	)
-	var vccResponse = sendHttpGetRequest(vccURL, vccHeaders, 3000)
-	var timestamp = transform("JSONPATH", "data.batteryChargeLevel.timestamp", vccResponse)
-	var value     = transform("JSONPATH", "data.batteryChargeLevel.value", vccResponse)
-	var unit      = transform("JSONPATH", "data.batteryChargeLevel.unit", vccResponse)
-	
-	logInfo("Volvo", "vccURL = {}", vccURL)
-	logInfo("Volvo", "vccResponse = {}", vccResponse)
-	logInfo("Volvo", "timestamp = {}", timestamp)
-	logInfo("Volvo", "value = {}", value)
-	logInfo("Volvo", "unit = {}", unit)
-	
-	volvochargelevel_refreshed.postUpdate(timestamp)
-	volvochargelevel.postUpdate(value)
-	volvoupdate.sendCommand(OFF)
+		// batteryChargeLevel
+		var vccURL = "https://api.volvocars.com/connected-vehicle/v1/vehicles/" + vehicle_vin + "/battery-charge-level"
+		var acceptHeader = "application/vnd.volvocars.api.connected-vehicle.vehicledata.v1+json"
+		var vccResponse = vccGetRequest.apply(access_token, vccURL, acceptHeader)
+
+	// https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/battery-charge-level
+	//     "data": {
+	//         "batteryChargeLevel": {
+	//             "value": "88.0",
+	//             "unit": "percentage",
+	//             "timestamp": "2023-02-11T18:19:17Z"
+	//         }
+	//     }
+
+		volvochargelevel_unit.postUpdate(transform("JSONPATH", "data.batteryChargeLevel.unit", vccResponse))
+		volvochargelevel_refreshed.postUpdate(transform("JSONPATH", "data.batteryChargeLevel.timestamp", vccResponse))
+		volvochargelevel.postUpdate(transform("JSONPATH", "data.batteryChargeLevel.value", vccResponse))
+		
+		// Retrieve statistics
+		vccURL = "https://api.volvocars.com/connected-vehicle/v1/vehicles/" + vehicle_vin + "/statistics"
+		acceptHeader = "application/vnd.volvocars.api.connected-vehicle.vehicledata.v1+json"
+		vccResponse = vccGetRequest.apply(access_token, vccURL, acceptHeader)
+
+	// https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/statistics
+	//     "data": {
+	//         "tripMeter1": {
+	//             "value": "53",
+	//             "unit": "kilometers",
+	//             "timestamp": "2023-02-11T18:09:03Z"
+	//         },
+	//         "tripMeter2": {
+	//             "value": "0",
+	//             "unit": "kilometers",
+	//             "timestamp": "2023-02-11T18:09:03Z"
+	//         },
+	//         "averageFuelConsumption": {
+	//             "value": "0.0",
+	//             "unit": "liters_per_100_kilometers",
+	//             "timestamp": "2023-02-11T18:09:03Z"
+	//         },
+	//         "distanceToEmpty": {
+	//             "value": "0",
+	//             "unit": "kilometers",
+	//             "timestamp": "2023-02-11T18:09:03Z"
+	//         },
+	//         "averageSpeed": {
+	//             "value": "287",
+	//             "unit": "kilometers_per_hour",
+	//             "timestamp": "2023-02-11T18:09:03Z"
+	//         }
+	//     }
+
+		// averageFuelConsumption
+		volvoaverageFuelConsumption_refreshed.postUpdate(transform("JSONPATH", "data.averageFuelConsumption.timestamp", vccResponse))
+		volvoaverageFuelConsumption.postUpdate(transform("JSONPATH", "data.averageFuelConsumption.value", vccResponse))
+		volvoaverageFuelConsumption_unit.postUpdate(transform("JSONPATH", "data.averageFuelConsumption.unit", vccResponse))
+
+		// averageSpeed
+		volvoaverageSpeed_refreshed.postUpdate(transform("JSONPATH", "data.averageSpeed.timestamp", vccResponse))
+		volvoaverageSpeed.postUpdate(transform("JSONPATH", "data.averageSpeed.value", vccResponse))
+		volvoaverageSpeed_unit.postUpdate(transform("JSONPATH", "data.averageSpeed.unit", vccResponse))
+
+		// distanceToEmpty
+		volvodistanceToEmpty_refreshed.postUpdate(transform("JSONPATH", "data.distanceToEmpty.timestamp", vccResponse))
+		volvodistanceToEmpty.postUpdate(transform("JSONPATH", "data.distanceToEmpty.value", vccResponse))
+		volvodistanceToEmpty_unit.postUpdate(transform("JSONPATH", "data.distanceToEmpty.unit", vccResponse))
+
+		// tripMeter1
+		volvotripMeter1_refreshed.postUpdate(transform("JSONPATH", "data.tripMeter1.timestamp", vccResponse))
+		volvotripMeter1.postUpdate(transform("JSONPATH", "data.tripMeter1.value", vccResponse))
+		volvotripMeter1_unit.postUpdate(transform("JSONPATH", "data.tripMeter1.unit", vccResponse))
+
+		// tripMeter2
+		volvotripMeter2_refreshed.postUpdate(transform("JSONPATH", "data.tripMeter2.timestamp", vccResponse))
+		volvotripMeter2.postUpdate(transform("JSONPATH", "data.tripMeter2.value", vccResponse))
+		volvotripMeter2_unit.postUpdate(transform("JSONPATH", "data.tripMeter2.unit", vccResponse))
+
+		// Retrieve odometer
+		vccURL = "https://api.volvocars.com/connected-vehicle/v1/vehicles/" + vehicle_vin + "/odometer"
+		acceptHeader = "application/vnd.volvocars.api.connected-vehicle.vehicledata.v1+json"
+		vccResponse = vccGetRequest.apply(access_token, vccURL, acceptHeader)
+
+	// https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/odometer
+	//     "data": {
+	//         "odometer": {
+	//             "value": "3382",
+	//             "unit": "kilometers",
+	//             "timestamp": "2023-02-11T18:09:03Z"
+	//         }
+	//     }
+
+		volvoodometer_unit.postUpdate(transform("JSONPATH", "data.odometer.unit", vccResponse))
+		volvoodometer_refreshed.postUpdate(transform("JSONPATH", "data.odometer.timestamp", vccResponse))
+		volvoodometer.postUpdate(Integer.valueOf(transform("JSONPATH", "data.odometer.value", vccResponse)) * 10)
+
+		// Retrieve diagnostics
+		vccURL = "https://api.volvocars.com/connected-vehicle/v1/vehicles/" + vehicle_vin + "/diagnostics"
+		acceptHeader = "application/vnd.volvocars.api.connected-vehicle.vehicledata.v1+json"
+		vccResponse = vccGetRequest.apply(access_token, vccURL, acceptHeader)
+
+	// https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/diagnostics
+	//     "data": {
+	//         "engineHoursToService": {
+	//             "value": "1138",
+	//             "unit": "hours",
+	//             "timestamp": "2023-02-11T18:09:03Z"
+	//         },
+	//         "serviceStatus": {
+	//             "value": "586",
+	//             "timestamp": "2023-02-11T18:09:03Z"
+	//         },
+	//         "washerFluidLevel": {
+	//             "value": "WASHER_FLUID_LEVEL_STATUS_OFF",
+	//             "timestamp": "2023-02-11T18:09:03Z"
+	//         },
+	//         "serviceTrigger": {
+	//             "value": "SERVICE_WARNING_NO_SERVICE_REMINDER_TRIGGERED",
+	//             "timestamp": "2023-02-11T18:09:03Z"
+	//         },
+	//         "kmToService": {
+	//             "value": "21871",
+	//             "unit": "kilometers",
+	//             "timestamp": "2023-02-11T18:09:03Z"
+	//         }
+	//     }
+
+		// engineHoursToService
+		volvoengineHoursToService_unit.postUpdate(transform("JSONPATH", "data.engineHoursToService.unit", vccResponse))
+		volvoengineHoursToService_refreshed.postUpdate(transform("JSONPATH", "data.engineHoursToService.timestamp", vccResponse))
+		volvoengineHoursToService.postUpdate(transform("JSONPATH", "data.engineHoursToService.value", vccResponse))
+
+		// serviceStatus
+		volvoserviceStatus_refreshed.postUpdate(transform("JSONPATH", "data.serviceStatus.timestamp", vccResponse))
+		volvoserviceStatus.postUpdate(transform("JSONPATH", "data.serviceStatus.value", vccResponse))
+
+		// washerFluidLevel
+		volvowasherFluidLevel_refreshed.postUpdate(transform("JSONPATH", "data.washerFluidLevel.timestamp", vccResponse))
+		volvowasherFluidLevel.postUpdate(transform("JSONPATH", "data.washerFluidLevel.value", vccResponse))
+
+		// serviceTrigger
+		volvoserviceTrigger_refreshed.postUpdate(transform("JSONPATH", "data.serviceTrigger.timestamp", vccResponse))
+		volvoserviceTrigger.postUpdate(transform("JSONPATH", "data.serviceTrigger.value", vccResponse))
+
+		// kmToService
+		volvokmToService_unit.postUpdate(transform("JSONPATH", "data.kmToService.unit", vccResponse))
+		volvokmToService_refreshed.postUpdate(transform("JSONPATH", "data.kmToService.timestamp", vccResponse))
+		volvokmToService.postUpdate(transform("JSONPATH", "data.kmToService.value", vccResponse))
+
+		// Retrieve windows
+		vccURL = "https://api.volvocars.com/connected-vehicle/v1/vehicles/" + vehicle_vin + "/windows"
+		acceptHeader = "application/vnd.volvocars.api.connected-vehicle.vehicledata.v1+json"
+		vccResponse = vccGetRequest.apply(access_token, vccURL, acceptHeader)
+
+	// https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/windows
+	//     "data": {
+	//         "rearLeft": {
+	//             "value": "CLOSED",
+	//             "timestamp": "2023-02-11T18:19:16Z"
+	//         },
+	//         "rearRight": {
+	//             "value": "OPEN",
+	//             "timestamp": "2023-02-11T18:19:16Z"
+	//         },
+	//         "frontLeft": {
+	//             "value": "CLOSED",
+	//             "timestamp": "2023-02-11T18:19:16Z"
+	//         },
+	//         "frontRight": {
+	//             "value": "CLOSED",
+	//             "timestamp": "2023-02-11T18:19:16Z"
+	//         }
+	//     }
+
+		// rearLeft
+		volvowindowrearleft_refreshed.postUpdate(transform("JSONPATH", "data.rearLeft.timestamp", vccResponse))
+		volvowindowrearleft.postUpdate(transform("JSONPATH", "data.rearLeft.value", vccResponse))
+
+		// rearRight
+		volvowindowrearright_refreshed.postUpdate(transform("JSONPATH", "data.rearRight.timestamp", vccResponse))
+		volvowindowrearright.postUpdate(transform("JSONPATH", "data.rearRight.value", vccResponse))
+
+		// frontLeft
+		volvowindowfrontleft_refreshed.postUpdate(transform("JSONPATH", "data.frontLeft.timestamp", vccResponse))
+		volvowindowfrontleft.postUpdate(transform("JSONPATH", "data.frontLeft.value", vccResponse))
+
+		// frontRight
+		volvowindowfrontright_refreshed.postUpdate(transform("JSONPATH", "data.frontRight.timestamp", vccResponse))
+		volvowindowfrontright.postUpdate(transform("JSONPATH", "data.frontRight.value", vccResponse))
+
+		// Retrieve tyres
+		vccURL = "https://api.volvocars.com/connected-vehicle/v1/vehicles/" + vehicle_vin + "/tyres"
+		acceptHeader = "application/vnd.volvocars.api.connected-vehicle.vehicledata.v1+json"
+		vccResponse = vccGetRequest.apply(access_token, vccURL, acceptHeader)
+
+	// https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/tyres
+	//     "data": {
+	//         "rearRight": {
+	//             "value": "TYRE_PRESSURE_WARNING_TYPE_NO_WARN",
+	//             "timestamp": "2023-02-11T18:09:03Z"
+	//         },
+	//         "rearLeft": {
+	//             "value": "TYRE_PRESSURE_WARNING_TYPE_NO_WARN",
+	//             "timestamp": "2023-02-11T18:09:03Z"
+	//         },
+	//         "frontLeft": {
+	//             "value": "TYRE_PRESSURE_WARNING_TYPE_NO_WARN",
+	//             "timestamp": "2023-02-11T18:09:03Z"
+	//         },
+	//         "frontRight": {
+	//             "value": "TYRE_PRESSURE_WARNING_TYPE_NO_WARN",
+	//             "timestamp": "2023-02-11T18:09:03Z"
+	//         }
+	//     }
+
+		// rearRight
+		volvo_tyres_rearRight_refreshed.postUpdate(transform("JSONPATH", "data.rearRight.timestamp", vccResponse))
+		volvo_tyres_rearRight.postUpdate(transform("JSONPATH", "data.rearRight.value", vccResponse))
+
+		// rearLeft
+		volvo_tyres_rearLeft_refreshed.postUpdate(transform("JSONPATH", "data.rearLeft.timestamp", vccResponse))
+		volvo_tyres_rearLeft.postUpdate(transform("JSONPATH", "data.rearLeft.value", vccResponse))
+
+		// frontLeft
+		volvo_tyres_frontLeft_refreshed.postUpdate(transform("JSONPATH", "data.frontLeft.timestamp", vccResponse))
+		volvo_tyres_frontLeft.postUpdate(transform("JSONPATH", "data.frontLeft.value", vccResponse))
+
+		// frontRight
+		volvo_tyres_frontRight_refreshed.postUpdate(transform("JSONPATH", "data.frontRight.timestamp", vccResponse))
+		volvo_tyres_frontRight.postUpdate(transform("JSONPATH", "data.frontRight.value", vccResponse))
+
+		// Retrieve doors
+		vccURL = "https://api.volvocars.com/connected-vehicle/v1/vehicles/" + vehicle_vin + "/doors"
+		acceptHeader = "application/vnd.volvocars.api.connected-vehicle.vehicledata.v1+json"
+		vccResponse = vccGetRequest.apply(access_token, vccURL, acceptHeader)
+
+	// https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/doors
+	//     "data": {
+	//         "carLocked": {
+	//             "value": "LOCKED",
+	//             "timestamp": "2023-02-11T18:19:16Z"
+	//         },
+	//         "frontLeft": {
+	//             "value": "CLOSED",
+	//             "timestamp": "2023-02-11T18:19:16Z"
+	//         },
+	//         "frontRight": {
+	//             "value": "CLOSED",
+	//             "timestamp": "2023-02-11T18:19:16Z"
+	//         },
+	//         "rearLeft": {
+	//             "value": "CLOSED",
+	//             "timestamp": "2023-02-11T18:19:16Z"
+	//         },
+	//         "rearRight": {
+	//             "value": "CLOSED",
+	//             "timestamp": "2023-02-11T18:19:16Z"
+	//         },
+	//         "hood": {
+	//             "value": "CLOSED",
+	//             "timestamp": "2023-02-11T18:19:16Z"
+	//         },
+	//         "tailGate": {
+	//             "value": "CLOSED",
+	//             "timestamp": "2023-02-11T18:19:16Z"
+	//         }
+	//     }
+
+		// carLocked
+		volvo_doors_carLocked_refreshed.postUpdate(transform("JSONPATH", "data.carLocked.timestamp", vccResponse))
+		volvo_doors_carLocked.postUpdate(transform("JSONPATH", "data.carLocked.value", vccResponse))
+
+		// frontLeft
+		volvo_doors_frontLeft_refreshed.postUpdate(transform("JSONPATH", "data.frontLeft.timestamp", vccResponse))
+		volvo_doors_frontLeft.postUpdate(transform("JSONPATH", "data.frontLeft.value", vccResponse))
+
+		// frontRight
+		volvo_doors_frontRight_refreshed.postUpdate(transform("JSONPATH", "data.frontRight.timestamp", vccResponse))
+		volvo_doors_frontRight.postUpdate(transform("JSONPATH", "data.frontRight.value", vccResponse))
+
+		// rearLeft
+		volvo_doors_rearLeft_refreshed.postUpdate(transform("JSONPATH", "data.rearLeft.timestamp", vccResponse))
+		volvo_doors_rearLeft.postUpdate(transform("JSONPATH", "data.rearLeft.value", vccResponse))
+
+		// rearRight
+		volvo_doors_rearRight_refreshed.postUpdate(transform("JSONPATH", "data.rearRight.timestamp", vccResponse))
+		volvo_doors_rearRight.postUpdate(transform("JSONPATH", "data.rearRight.value", vccResponse))
+
+		// hood
+		volvo_doors_hood_refreshed.postUpdate(transform("JSONPATH", "data.hood.timestamp", vccResponse))
+		volvo_doors_hood.postUpdate(transform("JSONPATH", "data.hood.value", vccResponse))
+
+		// tailGate
+		volvo_doors_tailGate_refreshed.postUpdate(transform("JSONPATH", "data.tailGate.timestamp", vccResponse))
+		volvo_doors_tailGate.postUpdate(transform("JSONPATH", "data.tailGate.value", vccResponse))
+
+		// Retrieve brakes
+		vccURL = "https://api.volvocars.com/connected-vehicle/v1/vehicles/" + vehicle_vin + "/brakes"
+		acceptHeader = "application/vnd.volvocars.api.connected-vehicle.vehicledata.v1+json"
+		vccResponse = vccGetRequest.apply(access_token, vccURL, acceptHeader)
+
+	// https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/brakes
+	//     "data": {
+	//         "brakeFluid": {
+	//             "value": "FLUID_LEVEL_HIGH",
+	//             "timestamp": "2023-02-11T18:09:03Z"
+	//         }
+	//     }
+
+		// brakeFluid
+		volvo_brakes_brakeFluid_refreshed.postUpdate(transform("JSONPATH", "data.brakeFluid.timestamp", vccResponse))
+		volvo_brakes_brakeFluid.postUpdate(transform("JSONPATH", "data.brakeFluid.value", vccResponse))
+
+		// Retrieve engine
+		vccURL = "https://api.volvocars.com/connected-vehicle/v1/vehicles/" + vehicle_vin + "/engine"
+		acceptHeader = "application/vnd.volvocars.api.connected-vehicle.vehicledata.v1+json"
+		vccResponse = vccGetRequest.apply(access_token, vccURL, acceptHeader)
+
+	// https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/engine
+	//     "data": {
+	//         "engineCoolantLevel": {
+	//             "value": "FLUID_LEVEL_HIGH",
+	//             "timestamp": "2023-02-11T18:09:03Z"
+	//         },
+	//         "oilLevel": {
+	//             "value": "OIL_LEVEL_STATUS_OIL_LVL_OK",
+	//             "timestamp": "2023-02-11T18:09:03Z"
+	//         }
+	//     }
+
+		// engineCoolantLevel
+		volvo_engine_engineCoolantLevel_refreshed.postUpdate(transform("JSONPATH", "data.engineCoolantLevel.timestamp", vccResponse))
+		volvo_engine_engineCoolantLevel.postUpdate(transform("JSONPATH", "data.engineCoolantLevel.value", vccResponse))
+
+		// oilLevel
+		volvo_engine_oilLevel_refreshed.postUpdate(transform("JSONPATH", "data.oilLevel.timestamp", vccResponse))
+		volvo_engine_oilLevel.postUpdate(transform("JSONPATH", "data.oilLevel.value", vccResponse))
+
+		// Retrieve vehicle details
+		vccURL = "https://api.volvocars.com/connected-vehicle/v1/vehicles/" + vehicle_vin
+		acceptHeader = "application/vnd.volvocars.api.connected-vehicle.vehicle.v1+json"
+		vccResponse = vccGetRequest.apply(access_token, vccURL, acceptHeader)
+
+// https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}
+//     "data": {
+//         "modelYear": "2021",
+//         "vin": "{{VIN2}}",
+//         "externalColour": "Snow",
+//         "images": {
+//             "exteriorDefaultUrl": "https://cas.volvocars.com/image/dynamic/MY21_2017/536/exterior-v1/R6/70700/R171/FN02/2G03/TC06/TP05/LR02/JT02/GR08/T101/TJ02/TM04/JG02/CB04/EV02/JB0C/T201/LF05/_/_/_/_/_/_/_/default.png?market=nl&client=connected-vehicle-api&w=1920&bg=descriptive-studio&angle=1&fallback",
+//             "interiorDefaultUrl": "https://cas.volvocars.com/image/dynamic/MY21_2017/536/interior-v2/R6/E/RB0000/NC0D/DI03/RU0A/2G03/PD02/NP02/CB04/EV02/K504/K901/FH01/_/_/default.png?market=nl&client=connected-vehicle-api&w=1920&bg=00000000&angle=0&fallback"
+//         },
+//         "descriptions": {
+//             "model": "XC40",
+//             "upholstery": "CHARCOAL/AGNES/CHARCOAL",
+//             "steering": "LEFT HAND DRIVE"
+//         }
+//     }
+
+		// Vehicle details
+		volvo_vehicle_modelYear.postUpdate(transform("JSONPATH", "data.modelYear", vccResponse))
+		volvo_vehicle_vin.postUpdate(transform("JSONPATH", "data.vin", vccResponse))
+		volvo_vehicle_externalColour.postUpdate(transform("JSONPATH", "data.externalColour", vccResponse))
+		volvo_vehicle_exteriorDefaultUrl.postUpdate(transform("JSONPATH", "data.images.exteriorDefaultUrl", vccResponse))
+		volvo_vehicle_interiorDefaultUrl.postUpdate(transform("JSONPATH", "data.images.interiorDefaultUrl", vccResponse))
+		volvo_vehicle_model.postUpdate(transform("JSONPATH", "data.descriptions.model", vccResponse))
+		volvo_vehicle_upholstery.postUpdate(transform("JSONPATH", "data.descriptions.upholstery", vccResponse))
+		volvo_vehicle_steering.postUpdate(transform("JSONPATH", "data.descriptions.steering", vccResponse))
+
+		// finish updating
+		volvoupdate.sendCommand(OFF)
+		logInfo("Volvo", "Done!")
+	}
 end
+
+rule "Trigger: Volvo default values"
+when
+    System started
+then
+    if (volvousername.state == NULL || volvousername.state == "") {
+		volvousername.postUpdate("DEFAULT_USERNAME_HERE")
+		logInfo("Volvo", "Setting default username")
+	}
+    if (volvopassword.state == NULL || volvopassword.state == "") {
+		volvopassword.postUpdate("DEFAULT_PASSWORD_HERE")
+		logInfo("Volvo", "Setting default password")
+	}
+    if (volvovccapikey.state == NULL || volvovccapikey.state == "") {
+		volvovccapikey.postUpdate("DEFAULT_VCC-API-KEY_HERE")
+		logInfo("Volvo", "Setting default vcc-api-key")
+	}
+    if (volvovin.state == NULL || volvovin.state == "") {
+		volvovin.postUpdate("DEFAULT_VIN_HERE")
+		logInfo("Volvo", "Setting default VIN")
+	}
+end
+
+//
+// The following URLs from the APIs are left unused as they seem to not work:
+//
+// https://api.volvocars.com/extended-vehicle/v1/vehicles/{{VIN2}}/resources
+// {
+//     "resources": [
+//         {
+//             "version": "1.0",
+//             "name": "sleepCycleStartTime",
+//             "href": "https://api.volvocars.com/extended-vehicle/v1/vehicles/{{VIN2}}/resources/sleepCycleStartTime"
+//         }
+//     ]
+// }
+// https://api.volvocars.com/extended-vehicle/v1/vehicles/{{VIN2}}/resources/{resource}
+//
+// https://api.volvocars.com/energy/v1/vehicles/{{VIN2}}/recharge-status
+// https://api.volvocars.com/energy/v1/vehicles/{{VIN2}}/recharge-status/battery-charge-level
+// https://api.volvocars.com/energy/v1/vehicles/{{VIN2}}/recharge-status/electric-range
+// https://api.volvocars.com/energy/v1/vehicles/{{VIN2}}/recharge-status/estimated-charging-time
+// https://api.volvocars.com/energy/v1/vehicles/{{VIN2}}/recharge-status/charging-connection-status
+// https://api.volvocars.com/energy/v1/vehicles/{{VIN2}}/recharge-status/charging-system-status
+//
+// https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/warnings
+// https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/requests
+// https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/requests/{id}
+// https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/fuel
+//     "data": {
+//         "fuelAmount": {
+//             "value": "0",
+//             "unit": "liters",
+//             "timestamp": "2023-02-11T18:09:03Z"
+//         }
+//     }
+// https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/environment
+// https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/engine-status
+// https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands
+//     "data": [
+//         {
+//             "command": "CLIMATIZATION_START",
+//             "href": "https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/climatization-start"
+//         },
+//         {
+//             "command": "CLIMATIZATION_STOP",
+//             "href": "https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/climatization-stop"
+//         },
+//         {
+//             "command": "ENGINE_START",
+//             "href": "https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/engine-start"
+//         },
+//         {
+//             "command": "ENGINE_STOP",
+//             "href": "https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/engine-stop"
+//         },
+//         {
+//             "command": "FLASH",
+//             "href": "https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/flash"
+//         },
+//         {
+//             "command": "HONK",
+//             "href": "https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/honk"
+//         },
+//         {
+//             "command": "HONK_AND_FLASH",
+//             "href": "https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/honk-flash"
+//         },
+//         {
+//             "command": "LOCK",
+//             "href": "https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/lock"
+//         },
+//         {
+//             "command": "SEND_NAVI_POI",
+//             "href": "https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/navi-point-of-interest"
+//         },
+//         {
+//             "command": "UNLOCK",
+//             "href": "https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/unlock"
+//         }
+//     ]
+//
+// https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/command-accessibility
+//
+// https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/navi-point-of-interest
+// application/vnd.volvocars.api.connected-vehicle.navipointofinterest.v1+json
+//
+// https://api.volvocars.com/connected-vehicle/v2/vehicles/{{VIN2}}/commands/honk
+// application/vnd.volvocars.api.connected-vehicle.honkandflash.v2+json
+// https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/honk
+// application/vnd.volvocars.api.connected-vehicle.honk.v1+json
+//
+// https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/honk-flash
+// application/vnd.volvocars.api.connected-vehicle.honkandflash.v1+json
+// https://api.volvocars.com/connected-vehicle/v2/vehicles/{{VIN2}}/commands/honk-flash
+// application/vnd.volvocars.api.connected-vehicle.honkandflash.v2+json
+//
+// https://api.volvocars.com/connected-vehicle/v2/vehicles/{{VIN2}}/commands/flash
+// application/vnd.volvocars.api.connected-vehicle.honkandflash.v2+json
+// https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/flash
+// application/vnd.volvocars.api.connected-vehicle.flash.v1+json
+//
+// https://api.volvocars.com/connected-vehicle/v2/vehicles/{{VIN2}}/commands/engine-stop
+// application/vnd.volvocars.api.connected-vehicle.enginestop.v2+json
+// https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/engine-stop
+// application/vnd.volvocars.api.connected-vehicle.enginestop.v1+json
+// https://api.volvocars.com/connected-vehicle/v2/vehicles/{{VIN2}}/commands/engine-start
+// application/vnd.volvocars.api.connected-vehicle.enginestart.v2+json
+// https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/commands/engine-start
+// application/vnd.volvocars.api.connected-vehicle.enginestart.v1+json
+//
+// https://api.volvocars.com/connected-vehicle/v2/vehicles/{{VIN2}}/commands/pre-cleaning-stop
+// application/vnd.volvocars.api.connected-vehicle.precleaningstop.v2+json
+// https://api.volvocars.com/connected-vehicle/v2/vehicles/{{VIN2}}/commands/pre-cleaning-start
+// application/vnd.volvocars.api.connected-vehicle.precleaningstart.v2+json
+//
+// https://api.volvocars.com/connected-vehicle/v1/vehicles/{{VIN2}}/requests/search
+// application/vnd.volvocars.api.connected-vehicle.searchrequestlist.v1+json

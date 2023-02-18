@@ -1,3 +1,10 @@
+2023-02-15 23:05:00.563 [INFO ] [rg.openhab.core.model.script.Heating] - Retrieve access token!
+2023-02-15 23:05:01.469 [INFO ] [org.openhab.core.model.script.Volvo ] - token_type = {"error_description":"We didn't recognize the username or password you entered. Please try again.","error":"invalid_grant"}
+2023-02-15 23:05:01.470 [INFO ] [org.openhab.core.model.script.Volvo ] - expires_in = {"error_description":"We didn't recognize the username or password you entered. Please try again.","error":"invalid_grant"}
+
+2023-02-15 23:05:01.473 [ERROR] [internal.handler.ScriptActionHandler] - Script execution of rule with UID 'volvo-6' failed: For input string: "{"error_description":"We didn't recognize the username or password you entered. Please try again.","error":"invalid_grant"}" in volvo
+
+
 https://api.volvocars.com/extended-vehicle/v1/vehicles
 {
     "vehicles": [

@@ -255,7 +255,7 @@ end
 // ************************************************
 rule "Trigger: Volvo Retrieve Status"
 when
-    Time cron "0 0/1 * 1/1 * ? *" or
+    Time cron "0 0/5 * 1/1 * ? *" or
 	Item volvoupdate changed to ON
 then
 	// define global variables

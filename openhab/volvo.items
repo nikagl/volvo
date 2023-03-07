@@ -13,7 +13,7 @@ Switch volvounlockcar "Volvo Car Unlock" (volvo) ["Switch"]
 Switch volvoupdate "Volvo Retrieve Update" (volvo) ["Switch"]
 
 // items to keep status value
-Number:Power volvochargelevel "Volvo Charge Level" (volvo) ["Measurement", "Power"]
+Number:Power volvochargelevel "Volvo Charge Level [%.1f %%]" (volvo) ["Measurement", "Power"]
 Number volvoaverageFuelConsumption "Volvo Average Fuel Consumption" (volvo) ["Measurement"]
 Number:Speed volvoaverageSpeed "Volvo Average Speed" (volvo) ["Measurement"]
 Number volvodistanceToEmpty "Volvo Distance to Empty" (volvo) ["Measurement"]

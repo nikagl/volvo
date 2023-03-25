@@ -1,5 +1,5 @@
 config:
-  label: "Controls: Volvo"
+  label: "Controls: Volvo Nika"
   sidebar: true
 blocks:
   - component: oh-block
@@ -17,26 +17,26 @@ blocks:
                   default:
                     - component: oh-image-card
                       config:
-                        lazy: true
-                        lazyFadeIn: true
-                        url: =items.volvo_vehicle_exteriorDefaultUrl.state
-                        footer: Exterior
                         action: sheet
                         actionModal: page:volvolockunlock
+                        footer: Exterior
+                        lazy: true
+                        lazyFadeIn: true
                         refreshInterval: 0
+                        url: =items.volvo_vehicle_exteriorDefaultUrl.state
               - component: oh-grid-col
                 config: {}
                 slots:
                   default:
                     - component: oh-image-card
                       config:
-                        lazy: true
-                        lazyFadeIn: true
-                        url: =items.volvo_vehicle_interiorDefaultUrl.state
-                        footer: Interior
                         action: sheet
                         actionModal: page:volvostopstartheater
+                        footer: Interior
+                        lazy: true
+                        lazyFadeIn: true
                         refreshInterval: 0
+                        url: =items.volvo_vehicle_interiorDefaultUrl.state
         - component: oh-grid-cells
           config: {}
           slots:
@@ -58,12 +58,12 @@ blocks:
                     - volvochargelevel
                   expandable: true
                   footer: =items.volvochargelevel_unit.state
+                  icon: oh:battery
                   item: volvochargelevel
                   stateAsHeader: true
                   subtitle: =dayjs(items.volvochargelevel_refreshed.state).format("DD-MM HH:mm")
                   title: Charge Level
                   trendItem: volvochargelevel
-                  icon: oh:battery
               - component: oh-label-cell
                 config:
                   action: analyzer
@@ -91,8 +91,86 @@ blocks:
                     - volvotripMeter1
                     - volvotripMeter2
                   expandable: true
-                  title: All Graphs
                   label: Click for all graphs
+                  title: All Graphs
+        - component: oh-grid-cells
+          config: {}
+          slots:
+            default:
+              - component: oh-label-cell
+                config:
+                  action: analyzer
+                  actionAnalyzerItems:
+                    - volvo_rechargestatus_batteryChargeLevel
+                  expandable: true
+                  footer: =items.volvo_rechargestatus_batteryChargeLevel_unit.state
+                  icon: oh:battery
+                  item: volvo_rechargestatus_batteryChargeLevel
+                  stateAsHeader: true
+                  subtitle: =dayjs(items.volvo_rechargestatus_batteryChargeLevel_refreshed.state).format("DD-MM
+                    HH:mm")
+                  title: Battery Charge Level
+                  trendItem: volvo_rechargestatus_batteryChargeLevel
+              - component: oh-label-cell
+                config:
+                  action: analyzer
+                  actionAnalyzerItems:
+                    - volvo_rechargestatus_electricRange
+                  expandable: true
+                  footer: =items.volvo_rechargestatus_electricRange_unit.state
+                  item: volvo_rechargestatus_electricRange
+                  stateAsHeader: true
+                  subtitle: =dayjs(items.volvo_rechargestatus_electricRange_refreshed.state).format("DD-MM
+                    HH:mm")
+                  title: Electric Range
+                  trendItem: volvo_rechargestatus_electricRange
+              - component: oh-label-cell
+                config:
+                  action: analyzer
+                  actionAnalyzerItems:
+                    - volvo_rechargestatus_estimatedChargingTime
+                  expandable: true
+                  footer: =items.volvo_rechargestatus_estimatedChargingTime_unit.state
+                  item: volvo_rechargestatus_estimatedChargingTime
+                  stateAsHeader: true
+                  subtitle: =dayjs(items.volvo_rechargestatus_estimatedChargingTime_refreshed.state).format("DD-MM
+                    HH:mm")
+                  title: Estimated Charging Time
+                  trendItem: volvo_rechargestatus_estimatedChargingTime
+              - component: oh-label-cell
+                config:
+                  color: '=(items.volvo_rechargestatus_chargingConnectionStatus.state ===
+                    "CONNECTION_STATUS_CONNECTED_AC") ? "green" :
+                    (items.volvo_rechargestatus_chargingConnectionStatus.state
+                    === "CONNECTION_STATUS_CONNECTED_DC") ? "green" :
+                    (items.volvo_rechargestatus_chargingConnectionStatus.state
+                    === "CONNECTION_STATUS_DISCONNECTED") ? "orange" : "red"'
+                  expandable: false
+                  footer: =items.volvo_rechargestatus_chargingConnectionStatus.state
+                  icon: oh:lock
+                  item: volvo_rechargestatus_chargingConnectionStatus
+                  label: ="-"
+                  stateAsHeader: true
+                  subtitle: =dayjs(items.volvo_rechargestatus_chargingConnectionStatus_refreshed.state).format("DD-MM
+                    HH:mm")
+                  title: Charging Connection Status
+              - component: oh-label-cell
+                config:
+                  color: '=(items.volvo_rechargestatus_chargingSystemStatus.state ===
+                    "CHARGING_SYSTEM_CHARGING") ? "blue" :
+                    (items.volvo_rechargestatus_chargingSystemStatus.state ===
+                    "CHARGING_SYSTEM_IDLE") ? "green" :
+                    (items.volvo_rechargestatus_chargingSystemStatus.state ===
+                    "CHARGING_SYSTEM_UNSPECIFIED") ? "orange" : "red"'
+                  expandable: false
+                  footer: =items.volvo_rechargestatus_chargingSystemStatus.state
+                  icon: oh:lock
+                  item: volvo_rechargestatus_chargingSystemStatus
+                  label: ="-"
+                  stateAsHeader: true
+                  subtitle: =dayjs(items.volvo_rechargestatus_chargingSystemStatus_refreshed.state).format("DD-MM
+                    HH:mm")
+                  title: Charging System Status
   - component: oh-block
     config:
       title: Doors
@@ -104,89 +182,89 @@ blocks:
             default:
               - component: oh-label-cell
                 config:
+                  action: sheet
+                  actionModal: page:volvolockunlock
                   color: '=(items.volvo_doors_carLocked.state === "LOCKED") ? "green" : "red"'
                   expandable: false
                   footer: =items.volvo_doors_carLocked.state
+                  icon: oh:lock
+                  item: volvo_doors_carLocked
+                  label: ="-"
                   stateAsHeader: true
                   subtitle: =dayjs(items.volvo_doors_carLocked_refreshed.state).format("DD-MM
                     HH:mm")
                   title: Car Locked
-                  item: volvo_doors_carLocked
-                  icon: oh:lock
-                  label: ="-"
-                  action: sheet
-                  actionModal: page:volvolockunlock
               - component: oh-label-cell
                 config:
                   color: '=(items.volvo_doors_hood.state === "CLOSED") ? "green" : "red"'
                   expandable: false
                   footer: =items.volvo_doors_hood.state
+                  icon: oh:lock
+                  item: volvo_doors_hood
+                  label: ="-"
                   stateAsHeader: true
                   subtitle: =dayjs(items.volvo_doors_hood_refreshed.state).format("DD-MM HH:mm")
                   title: Hood
-                  item: volvo_doors_hood
-                  icon: oh:lock
-                  label: ="-"
               - component: oh-label-cell
                 config:
                   color: '=(items.volvo_doors_frontLeft.state === "CLOSED") ? "green" : "red"'
                   expandable: false
                   footer: =items.volvo_doors_frontLeft.state
+                  icon: oh:lock
+                  item: volvo_doors_frontLeft
+                  label: ="-"
                   stateAsHeader: true
                   subtitle: =dayjs(items.volvo_doors_frontLeft_refreshed.state).format("DD-MM
                     HH:mm")
                   title: Left Front
-                  item: volvo_doors_frontLeft
-                  icon: oh:lock
-                  label: ="-"
               - component: oh-label-cell
                 config:
                   color: '=(items.volvo_doors_frontRight.state === "CLOSED") ? "green" : "red"'
                   expandable: false
                   footer: =items.volvo_doors_frontRight.state
+                  icon: oh:lock
+                  item: volvo_doors_frontRight
+                  label: ="-"
                   stateAsHeader: true
                   subtitle: =dayjs(items.volvo_doors_frontRight_refreshed.state).format("DD-MM
                     HH:mm")
                   title: Right Front
-                  item: volvo_doors_frontRight
-                  icon: oh:lock
-                  label: ="-"
               - component: oh-label-cell
                 config:
                   color: '=(items.volvo_doors_rearLeft.state === "CLOSED") ? "green" : "red"'
                   expandable: false
                   footer: =items.volvo_doors_rearLeft.state
+                  icon: oh:lock
+                  item: volvo_doors_rearLeft
+                  label: ="-"
                   stateAsHeader: true
                   subtitle: =dayjs(items.volvo_doors_rearLeft_refreshed.state).format("DD-MM
                     HH:mm")
                   title: Left Rear
-                  item: volvo_doors_rearLeft
-                  icon: oh:lock
-                  label: ="-"
               - component: oh-label-cell
                 config:
                   color: '=(items.volvo_doors_rearRight.state === "CLOSED") ? "green" : "red"'
                   expandable: false
                   footer: =items.volvo_doors_rearRight.state
+                  icon: oh:lock
+                  item: volvo_doors_rearRight
+                  label: ="-"
                   stateAsHeader: true
                   subtitle: =dayjs(items.volvo_doors_rearRight_refreshed.state).format("DD-MM
                     HH:mm")
                   title: Right Rear
-                  item: volvo_doors_rearRight
-                  icon: oh:lock
-                  label: ="-"
               - component: oh-label-cell
                 config:
                   color: '=(items.volvo_doors_tailGate.state === "CLOSED") ? "green" : "red"'
                   expandable: false
                   footer: =items.volvo_doors_tailGate.state
+                  icon: oh:lock
+                  item: volvo_doors_tailGate
+                  label: ="-"
                   stateAsHeader: true
                   subtitle: =dayjs(items.volvo_doors_tailGate_refreshed.state).format("DD-MM
                     HH:mm")
                   title: Tailgate
-                  item: volvo_doors_tailGate
-                  icon: oh:lock
-                  label: ="-"
   - component: oh-block
     config:
       title: Diagnostics
@@ -239,13 +317,13 @@ blocks:
                     ? "green" : "red"'
                   expandable: false
                   footer: =items.volvowasherFluidLevel.state
+                  icon: oh:lock
+                  item: volvowasherFluidLevel
+                  label: ="-"
                   stateAsHeader: true
                   subtitle: =dayjs(items.volvowasherFluidLevel_refreshed.state).format("DD-MM
                     HH:mm")
                   title: Washer Fluid
-                  item: volvowasherFluidLevel
-                  icon: oh:lock
-                  label: ="-"
               - component: oh-label-cell
                 config:
                   color: '=(items.volvoserviceTrigger.state ===
@@ -253,13 +331,13 @@ blocks:
                     "red"'
                   expandable: false
                   footer: =items.volvoserviceTrigger.state
+                  icon: oh:lock
+                  item: volvoserviceTrigger
+                  label: ="-"
                   stateAsHeader: true
                   subtitle: =dayjs(items.volvoserviceTrigger_refreshed.state).format("DD-MM
                     HH:mm")
                   title: Service trigger
-                  item: volvoserviceTrigger
-                  icon: oh:lock
-                  label: ="-"
   - component: oh-block
     config:
       title: Windows
@@ -274,49 +352,49 @@ blocks:
                   color: '=(items.volvowindowfrontleft.state === "CLOSED") ? "green" : "red"'
                   expandable: false
                   footer: =items.volvowindowfrontleft.state
+                  icon: oh:lock
+                  item: volvowindowfrontleft
+                  label: ="-"
                   stateAsHeader: true
                   subtitle: =dayjs(items.volvowindowfrontleft_refreshed.state).format("DD-MM
                     HH:mm")
                   title: Left Front
-                  icon: oh:lock
-                  item: volvowindowfrontleft
-                  label: ="-"
               - component: oh-label-cell
                 config:
                   color: '=(items.volvowindowfrontright.state === "CLOSED") ? "green" : "red"'
                   expandable: false
                   footer: =items.volvowindowfrontright.state
+                  icon: oh:lock
+                  item: volvowindowfrontright
+                  label: ="-"
                   stateAsHeader: true
                   subtitle: =dayjs(items.volvowindowfrontright_refreshed.state).format("DD-MM
                     HH:mm")
                   title: Right Front
-                  icon: oh:lock
-                  item: volvowindowfrontright
-                  label: ="-"
               - component: oh-label-cell
                 config:
                   color: '=(items.volvowindowrearleft.state === "CLOSED") ? "green" : "red"'
                   expandable: false
                   footer: =items.volvowindowrearleft.state
+                  icon: oh:lock
+                  item: volvowindowrearleft
+                  label: ="-"
                   stateAsHeader: true
                   subtitle: =dayjs(items.volvowindowrearleft_refreshed.state).format("DD-MM
                     HH:mm")
                   title: Left Rear
-                  icon: oh:lock
-                  item: volvowindowrearleft
-                  label: ="-"
               - component: oh-label-cell
                 config:
                   color: '=(items.volvowindowrearright.state === "CLOSED") ? "green" : "red"'
                   expandable: false
                   footer: =items.volvowindowrearright.state
+                  icon: oh:lock
+                  item: volvowindowrearright
+                  label: ="-"
                   stateAsHeader: true
                   subtitle: =dayjs(items.volvowindowrearright_refreshed.state).format("DD-MM
                     HH:mm")
                   title: Right Rear
-                  icon: oh:lock
-                  item: volvowindowrearright
-                  label: ="-"
   - component: oh-block
     config:
       title: Tyres
@@ -332,52 +410,52 @@ blocks:
                     "TYRE_PRESSURE_WARNING_TYPE_NO_WARN") ? "green" : "red"'
                   expandable: false
                   footer: =items.volvo_tyres_frontLeft.state
+                  icon: oh:lock
+                  item: volvo_tyres_frontLeft
+                  label: ="-"
                   stateAsHeader: true
                   subtitle: =dayjs(items.volvo_tyres_frontLeft_refreshed.state).format("DD-MM
                     HH:mm")
                   title: Left Front
-                  item: volvo_tyres_frontLeft
-                  icon: oh:lock
-                  label: ="-"
               - component: oh-label-cell
                 config:
                   color: '=(items.volvo_tyres_frontRight.state ===
                     "TYRE_PRESSURE_WARNING_TYPE_NO_WARN") ? "green" : "red"'
                   expandable: false
                   footer: =items.volvo_tyres_frontRight.state
+                  icon: oh:lock
+                  item: volvo_tyres_frontRight
+                  label: ="-"
                   stateAsHeader: true
                   subtitle: =dayjs(items.volvo_tyres_frontRight_refreshed.state).format("DD-MM
                     HH:mm")
                   title: Right Front
-                  item: volvo_tyres_frontRight
-                  icon: oh:lock
-                  label: ="-"
               - component: oh-label-cell
                 config:
                   color: '=(items.volvo_tyres_rearLeft.state ===
                     "TYRE_PRESSURE_WARNING_TYPE_NO_WARN") ? "green" : "red"'
                   expandable: false
                   footer: =items.volvo_tyres_rearLeft.state
+                  icon: oh:lock
+                  item: volvo_tyres_rearLeft
+                  label: ="-"
                   stateAsHeader: true
                   subtitle: =dayjs(items.volvo_tyres_rearLeft_refreshed.state).format("DD-MM
                     HH:mm")
                   title: Left Rear
-                  item: volvo_tyres_rearLeft
-                  icon: oh:lock
-                  label: ="-"
               - component: oh-label-cell
                 config:
                   color: '=(items.volvo_tyres_rearRight.state ===
                     "TYRE_PRESSURE_WARNING_TYPE_NO_WARN") ? "green" : "red"'
                   expandable: false
                   footer: =items.volvo_tyres_rearRight.state
+                  icon: oh:lock
+                  item: volvo_tyres_rearRight
+                  label: ="-"
                   stateAsHeader: true
                   subtitle: =dayjs(items.volvo_tyres_rearRight_refreshed.state).format("DD-MM
                     HH:mm")
                   title: Right Rear
-                  item: volvo_tyres_rearRight
-                  icon: oh:lock
-                  label: ="-"
   - component: oh-block
     config:
       title: Brakes & Engine
@@ -393,39 +471,39 @@ blocks:
                     : "red"'
                   expandable: false
                   footer: =items.volvo_brakes_brakeFluid.state
+                  icon: oh:lock
+                  item: volvo_brakes_brakeFluid
+                  label: ="-"
                   stateAsHeader: true
                   subtitle: =dayjs(items.volvo_brakes_brakeFluid_refreshed.state).format("DD-MM
                     HH:mm")
                   title: Brake Fluid
-                  item: volvo_brakes_brakeFluid
-                  icon: oh:lock
-                  label: ="-"
               - component: oh-label-cell
                 config:
                   color: '=(items.volvo_engine_engineCoolantLevel.state === "FLUID_LEVEL_HIGH") ?
                     "green" : "red"'
                   expandable: false
                   footer: =items.volvo_engine_engineCoolantLevel.state
+                  icon: oh:lock
+                  item: volvo_engine_engineCoolantLevel
+                  label: ="-"
                   stateAsHeader: true
                   subtitle: =dayjs(items.volvo_engine_engineCoolantLevel_refreshed.state).format("DD-MM
                     HH:mm")
                   title: Engine Coolant
-                  item: volvo_engine_engineCoolantLevel
-                  icon: oh:lock
-                  label: ="-"
               - component: oh-label-cell
                 config:
                   color: '=(items.volvo_engine_oilLevel.state === "OIL_LEVEL_STATUS_OIL_LVL_OK") ?
                     "green" : "red"'
                   expandable: false
                   footer: =items.volvo_engine_oilLevel.state
+                  icon: oh:lock
+                  item: volvo_engine_oilLevel
+                  label: ="-"
                   stateAsHeader: true
                   subtitle: =dayjs(items.volvo_engine_oilLevel_refreshed.state).format("DD-MM
                     HH:mm")
                   title: Engine Oil Level
-                  item: volvo_engine_oilLevel
-                  icon: oh:lock
-                  label: ="-"
   - component: oh-block
     config:
       title: Statistics

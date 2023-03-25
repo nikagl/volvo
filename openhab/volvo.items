@@ -51,6 +51,11 @@ String volvo_vehicle_interiorDefaultUrl "Volvo Interior URL" (volvo) ["String"]
 String volvo_vehicle_model "Volvo Model" (volvo) ["String"]
 String volvo_vehicle_upholstery "Volvo Upholstery" (volvo) ["String"]
 String volvo_vehicle_steering "Volvo Steering" (volvo) ["String"]
+Number:Power volvo_rechargestatus_batteryChargeLevel "Volvo Battery Charge Level [%.1f %%]" (volvo) ["Measurement", "Power"]
+Number volvo_rechargestatus_electricRange "Volvo Electric Range" (volvo) ["Measurement"]
+Number volvo_rechargestatus_estimatedChargingTime "Volvo Estimated Charging Time" (volvo) ["String"]
+String volvo_rechargestatus_chargingConnectionStatus "Volvo Charging Connection Status" (volvo) ["String"]
+String volvo_rechargestatus_chargingSystemStatus "Volvo Charging System Status" (volvo) ["String"]
 
 // items to keep status refresh date/time
 DateTime volvochargelevel_refreshed "Volvo Chargelevel Updated Time [%1$td-%1$tm-%1$tY %1$tH:%1$tM:%1$tS]" (volvo) ["Point"]
@@ -83,6 +88,11 @@ DateTime volvo_doors_tailGate_refreshed "Volvo Doors Tailgate Updated Time [%1$t
 DateTime volvo_brakes_brakeFluid_refreshed "Volvo Brake Fluid Updated Time [%1$td-%1$tm-%1$tY %1$tH:%1$tM:%1$tS]" (volvo) ["Point"]
 DateTime volvo_engine_engineCoolantLevel_refreshed "Volvo Engine Coolant Updated Time [%1$td-%1$tm-%1$tY %1$tH:%1$tM:%1$tS]" (volvo) ["Point"]
 DateTime volvo_engine_oilLevel_refreshed "Volvo Engine Oil Level Updated Time [%1$td-%1$tm-%1$tY %1$tH:%1$tM:%1$tS]" (volvo) ["Point"]
+DateTime volvo_rechargestatus_batteryChargeLevel_refreshed "Volvo Battery Charge Level Updated Time [%1$td-%1$tm-%1$tY %1$tH:%1$tM:%1$tS]" (volvo) ["Point"]
+DateTime volvo_rechargestatus_electricRange_refreshed "Volvo Electric Range Updated Time [%1$td-%1$tm-%1$tY %1$tH:%1$tM:%1$tS]" (volvo) ["Point"]
+DateTime volvo_rechargestatus_estimatedChargingTime_refreshed "Volvo Charging Time Updated Time [%1$td-%1$tm-%1$tY %1$tH:%1$tM:%1$tS]" (volvo) ["Point"]
+DateTime volvo_rechargestatus_chargingConnectionStatus_refreshed "Volvo Charging Connection Status Updated Time [%1$td-%1$tm-%1$tY %1$tH:%1$tM:%1$tS]" (volvo) ["Point"]
+DateTime volvo_rechargestatus_chargingSystemStatus_refreshed "Volvo Charging Charging System Status Updated Time [%1$td-%1$tm-%1$tY %1$tH:%1$tM:%1$tS]" (volvo) ["Point"]
 
 // items to keep status unit
 String volvochargelevel_unit "Volvo Charge Level Unit" (volvo) ["Point"]
@@ -94,6 +104,9 @@ String volvotripMeter2_unit "Volvo Charge Trip Meter 2 Unit" (volvo) ["Point"]
 String volvoodometer_unit "Volvo Odometer Unit" (volvo) ["Point"]
 String volvoengineHoursToService_unit "Volvo Odometer Unit" (volvo) ["Point"]
 String volvokmToService_unit "Volvo KM to Service Unit" (volvo) ["Point"]
+String volvo_rechargestatus_batteryChargeLevel_unit "Volvo Battery Charge Level Unit" (volvo) ["Point"]
+String volvo_rechargestatus_electricRange_unit "Volvo Electric Range Unit" (volvo) ["Point"]
+String volvo_rechargestatus_estimatedChargingTime_unit "Volvo Charging Time Unit" (volvo) ["Point"]
 
 // items for debugging
 String volvoinvokestatus "Volvo Last Status" (volvo) ["Status"]

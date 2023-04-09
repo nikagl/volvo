@@ -62,7 +62,7 @@ try:
     vehicles = requests.post(
         url,
         headers= {
-            "Content-Type": "application/vnd.volvocars.api.connected-vehicle.lock.v2+json",
+            "Content-Type": "application/json",
             "vcc-api-key": config["vcc_apikey"],
             "Authorization": "Bearer " + access_token
         }

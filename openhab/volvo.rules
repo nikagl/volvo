@@ -171,7 +171,7 @@ then
 	if (access_token != "") {
 		var vehicle_vin = volvovin.state.toString()
 		var vccURL = "https://api.volvocars.com/connected-vehicle/v2/vehicles/" + vehicle_vin + "/commands/lock"
-		var acceptHeader = "application/vnd.volvocars.api.connected-vehicle.lock.v2+json"
+		var acceptHeader = "application/json"
 		var vccContentType = acceptHeader
 		val vccResponse = vccPostRequest.apply(access_token, vccURL, acceptHeader, vccContentType)
 
@@ -193,7 +193,7 @@ then
 	if (access_token != "") {
 		var vehicle_vin = volvovin.state.toString()
 		var vccURL = "https://api.volvocars.com/connected-vehicle/v2/vehicles/" + vehicle_vin + "/commands/unlock"
-		var acceptHeader = "application/vnd.volvocars.api.connected-vehicle.unlock.v2+json"
+		var acceptHeader = "application/json"
 		var vccContentType = acceptHeader
 		val vccResponse = vccPostRequest.apply(access_token, vccURL, acceptHeader, vccContentType)
 
@@ -215,7 +215,7 @@ then
 	if (access_token != "") {
 		var vehicle_vin = volvovin.state.toString()
 		var vccURL = "https://api.volvocars.com/connected-vehicle/v2/vehicles/" + vehicle_vin + "/commands/climatization-start"
-		var acceptHeader = "application/vnd.volvocars.api.connected-vehicle.climatizationstart.v2+json"
+		var acceptHeader = "application/json"
 		var vccContentType = acceptHeader
 		val vccResponse = vccPostRequest.apply(access_token, vccURL, acceptHeader, vccContentType)
 
@@ -237,7 +237,7 @@ then
 	if (access_token != "") {
 		var vehicle_vin = volvovin.state.toString()
 		var vccURL = "https://api.volvocars.com/connected-vehicle/v2/vehicles/" + vehicle_vin + "/commands/climatization-stop"
-		var acceptHeader = "application/vnd.volvocars.api.connected-vehicle.climatizationstop.v2+json"
+		var acceptHeader = "application/json"
 		var vccContentType = acceptHeader
 		val vccResponse = vccPostRequest.apply(access_token, vccURL, acceptHeader, vccContentType)
 

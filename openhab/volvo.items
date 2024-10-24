@@ -3,6 +3,9 @@ String volvousername "Volvo User Name" (volvo) ["Point"]
 String volvopassword "Volvo Password" (volvo) ["Point"]
 String volvovccapikey "Volvo VCC API-Key" (volvo) ["Point"]
 String volvovin "Volvo VIN" (volvo) ["Point"]
+Number volvootp "Volvo OTP" (volvo) ["Point"]
+String volvootpid "Volvo OTP ID" (volvo) ["Point"]
+String volvootpresponse "Volvo OTP Response" (volvo) ["Point"]
 
 // items to trigger commands
 Switch volvolistvehicles "Volvo List Vehicles" (volvo) ["Switch"]
@@ -11,6 +14,8 @@ Switch volvostopheater "Volvo Heater Stop" (volvo) ["Switch"]
 Switch volvolockcar "Volvo Car Lock" (volvo) ["Switch"]
 Switch volvounlockcar "Volvo Car Unlock" (volvo) ["Switch"]
 Switch volvoupdate "Volvo Retrieve Update" (volvo) ["Switch"]
+Switch VOC_Start_OTP "VOC Start OTP" (volvo) ["Switch"]
+Switch VOC_Verify_OTP "VOC Verify OTP" (volvo) ["Switch"]
 
 // items to keep status value
 Number:Power volvochargelevel "Volvo Charge Level [%.1f %%]" (volvo) ["Measurement", "Power"]
